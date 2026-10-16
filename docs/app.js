@@ -1264,7 +1264,9 @@
     for (const h of HOMES) out.set(h.name, centre(located.filter((w) => w.home === h.name)) || out.get(null));
     return out;
   })();
+  // "Home" means the home metro when a walk's region is known; otherwise within HOME_KM of the home of the time.
   const isHome = (w, homeName) => {
+    if (homeName === undefined && w.region) return w.region === REGIONS[0];
     const c = homeCenters.get(homeName !== undefined ? homeName : (homeCenters.has(w.home) ? w.home : null));
     return !c || !w.latlon || km(w.latlon, c) <= HOME_KM;
   };
