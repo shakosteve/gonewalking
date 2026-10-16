@@ -1442,7 +1442,7 @@
     const rows = [
       ["Distance", fmtMi(w.mi)], ["Time", fmtDur(w.dur)], ["Pace", `${fmtPace(w.pace)} /mi`],
       ["Moving pace", `${fmtPace(w.mpace)} /mi`], ["Climbing", w.ft != null ? `${fmtNum(w.ft)} ft` : "–"],
-      ["Calories", w.cal ? fmtNum(w.cal) : "–"], ["Steps", w.steps ? fmtNum(w.steps) : "–"],
+      ["Steps", w.steps ? fmtNum(w.steps) : "–"],
     ];
     const kmlUrl = URL.createObjectURL(new Blob([walkKml(w)], { type: "application/vnd.google-earth.kml+xml" }));
     const time = w.start ? new Date(w.start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";

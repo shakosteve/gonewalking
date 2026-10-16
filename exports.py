@@ -263,7 +263,7 @@ def write_site_data(rows, track_features, kml_dir, site_data_dir):
             "id": r["workout_id"], "date": r["date"], "start": r["start_time_local"],
             "hour": r["start_hour"], "activity": r["activity"], "mi": r["distance_mi"],
             "dur": r["duration_s"], "moving": r["moving_time_s"], "pace": r["pace_min_per_mi"],
-            "mpace": r["moving_pace_min_per_mi"], "ft": r["elevation_gain_ft"], "cal": r["calories"],
+            "mpace": r["moving_pace_min_per_mi"], "ft": r["elevation_gain_ft"],
             "steps": r["steps"], "notes": r["notes"], "link": r["link"], "latlon": start,
             "place": r["place"], "detail": r["place_detail"], "url": r["place_url"], "city": r["city"], "county": r["county"],
             "state": r["state"], "country": r["country"], "region": r["region"],
