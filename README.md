@@ -3,6 +3,9 @@
 Downloads my MapMyWalk / MapMyFitness workout history and GPS tracks so they can feed a
 dashboard and a custom Google Map.
 
+**Live site: [Steve's Gone Walking](https://shakosteve.github.io/gonewalking/)**, published
+with GitHub Pages from the `docs/` folder on `main`.
+
 ## Setup
 
 ```
@@ -71,9 +74,15 @@ Two hand-edited files refine the results:
 
 ## Dashboard (`docs/`)
 
-A static site, ready for GitHub Pages (Settings → Pages → Deploy from a branch → `main`,
-`/docs`). `process` refreshes its data in `docs/data/` (stats, simplified routes and KML);
-everything else in `docs/` is hand-written:
+A static site, published at **https://shakosteve.github.io/gonewalking/** by GitHub Pages
+(Settings → Pages → Deploy from a branch → `main`, `/docs`; `docs/.nojekyll` makes Pages serve
+the files as-is). `process` refreshes its data in `docs/data/` (stats, simplified routes and
+KML); everything else in `docs/` is hand-written.
+
+To update the live site: run `python gonewalking.py sync`, then commit and push the changes in
+`docs/` (and any edited `place_*.csv` files). Pages republishes within a minute or two.
+
+The files in `docs/`:
 
 - `index.html`, `style.css`, `app.js`: the page. Charts are plain SVG; the map uses Leaflet
   with OpenStreetMap tiles. No build step.
