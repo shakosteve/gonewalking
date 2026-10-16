@@ -4,7 +4,8 @@ Usage:
     python gonewalking.py sync              # refresh stats CSV, download any missing TCX files
     python gonewalking.py sync --limit 5    # only download up to 5 new TCX files
     python gonewalking.py stats             # refresh the stats CSV only
-    python gonewalking.py process           # rebuild compact GeoJSON tracks from TCX files
+    python gonewalking.py process           # rebuild tracks, clean stats CSV and KML from downloads
+    python gonewalking.py places            # look up park/city for new walks, list unnamed spots
 
 Authentication comes from MMF_AUTH_TOKEN in .env (the "auth-token" cookie from
 a logged-in browser session on mapmyfitness.com).
@@ -22,12 +23,17 @@ from pathlib import Path
 
 import requests
 
+import exports
+import places
 import tracks
 
 ROOT = Path(__file__).resolve().parent
 DATA_DIR = ROOT / "data"
 TCX_DIR = DATA_DIR / "tcx"
 TRACKS_DIR = DATA_DIR / "tracks"
+SITE_DATA_DIR = ROOT / "docs" / "data"
+PLACE_OVERRIDES = ROOT / "place_overrides.csv"
+PLACE_LINKS = ROOT / "place_links.csv"
 STATS_CSV = DATA_DIR / "workouts.csv"
 MANIFEST = DATA_DIR / "manifest.json"
 
@@ -178,6 +184,29 @@ def download_tracks(session, workouts, manifest, limit=None, delay=2.0):
             time.sleep(delay)
 
 
+def process(force=False, fetch_places=False):
+    tracks.process_all(STATS_CSV, TCX_DIR, TRACKS_DIR, force=force)
+    found = places.update_places(TRACKS_DIR, DATA_DIR, PLACE_OVERRIDES, fetch_missing=fetch_places, links_path=PLACE_LINKS)
+    exports.export_all(STATS_CSV, TRACKS_DIR, DATA_DIR, SITE_DATA_DIR)
+    return found
+
+
+def print_unknown_places(found):
+    clusters = places.unknown_clusters(found)
+    if not clusters:
+        print("Every workout has a place name.")
+        return
+    print(f"\n{sum(len(c['walks']) for c in clusters)} workouts in {len(clusters)} spots have no park name.")
+    print(f"Add names to {PLACE_OVERRIDES.name} (name,lat,lon,radius_m) and run process again.\n")
+    for c in clusters:
+        lat, lon = c["center"]
+        p = c["walks"][0][1]
+        where = ", ".join(x for x in (p["city"], p["county"], p["state"] or p["country"]) if x)
+        dates = ", ".join(w[1]["date"] for w in c["walks"][:4]) + (" ..." if len(c["walks"]) > 4 else "")
+        print(f"{len(c['walks']):>3}  {lat:.5f},{lon:.5f}  {where}")
+        print(f"     https://www.google.com/maps/search/?api=1&query={lat:.5f},{lon:.5f}   ({dates})")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -186,12 +215,16 @@ def main():
     sync.add_argument("--delay", type=float, default=2.0, help="seconds between downloads (default 2)")
     sync.add_argument("--retry-no-gps", action="store_true", help="re-check workouts previously found to have no GPS")
     sub.add_parser("stats", help="refresh the workout stats CSV only")
-    process = sub.add_parser("process", help="rebuild compact GeoJSON tracks from downloaded TCX files")
-    process.add_argument("--force", action="store_true", help="reprocess every track, even if up to date")
+    process_cmd = sub.add_parser("process", help="rebuild tracks, clean stats CSV and KML from downloads")
+    process_cmd.add_argument("--force", action="store_true", help="reprocess every track, even if up to date")
+    sub.add_parser("places", help="look up park/city names for new walks and list walks without one")
     args = parser.parse_args()
 
     if args.command == "process":
-        tracks.process_all(STATS_CSV, TCX_DIR, TRACKS_DIR, force=args.force)
+        process(force=args.force)
+        return
+    if args.command == "places":
+        print_unknown_places(process(fetch_places=True))
         return
 
     load_env()
@@ -207,7 +240,7 @@ def main():
                     if entry.get("status") == "no_gps":
                         entry["status"] = "retry"
             download_tracks(session, workouts, manifest, args.limit, args.delay)
-            tracks.process_all(STATS_CSV, TCX_DIR, TRACKS_DIR)
+            process(fetch_places=True)
     except AuthError as exc:
         sys.exit(str(exc))
     print("Done.")
