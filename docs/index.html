@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Steve's Gone Walking</title>
+  <meta name="description" content="Every walk since 2016: miles, pace, routes and records, from MapMyWalk GPS data.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="page-header">
+    <div class="intro">
+      <img class="portrait" id="portrait" src="images/portrait.jpg" alt="Portrait" width="96" height="96">
+      <div>
+        <h1 id="site-title">Steve's Gone Walking</h1>
+        <p class="byline" id="byline"></p>
+        <p class="subtitle" id="subtitle"></p>
+      </div>
+    </div>
+    <div class="header-side">
+      <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode"></button>
+      <div class="kit" aria-hidden="true">
+        <span class="badge"><img src="images/openmoji/hiking-boot.svg" alt=""></span>
+        <span class="badge"><img src="images/openmoji/water-bottle.svg" alt=""></span>
+        <span class="badge"><img src="images/openmoji/backpack.svg" alt=""></span>
+        <span class="badge"><img src="images/openmoji/compass.svg" alt=""></span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="filters" role="group" aria-label="Filters">
+      <label class="filter">
+        <span>Year</span>
+        <select id="filter-year"></select>
+      </label>
+      <label class="filter" id="filter-home-wrap" hidden>
+        <span>Living in</span>
+        <select id="filter-home"></select>
+      </label>
+      <label class="filter">
+        <span>Region</span>
+        <select id="filter-region"></select>
+      </label>
+      <label class="filter">
+        <span>Place</span>
+        <select id="filter-place"></select>
+      </label>
+      <div class="filter">
+        <span id="activity-label">Activity</span>
+        <div class="segmented" role="radiogroup" aria-labelledby="activity-label" id="filter-activity"></div>
+      </div>
+    </div>
+
+    <section class="hero" aria-label="Summary">
+      <div class="hero-figure">
+        <div class="hero-label" id="hero-label">Miles walked</div>
+        <div class="hero-value" id="hero-value"></div>
+        <div class="delta" id="hero-delta"></div>
+      </div>
+      <div class="tiles" id="tiles"></div>
+    </section>
+
+    <section class="card map-card" aria-labelledby="map-title">
+      <div class="card-head">
+        <h2 id="map-title"><span class="badge small"><img src="images/openmoji/compass.svg" alt=""></span>Routes</h2>
+        <p class="card-note" id="map-note">Click a route to see its details and pace along the way.</p>
+      </div>
+      <div class="map-layout">
+        <div id="map" class="map" role="region" aria-label="Map of routes"></div>
+        <aside class="walk-detail" id="walk-detail" aria-live="polite"></aside>
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="card" id="card-years"></section>
+      <section class="card" id="card-months"></section>
+      <section class="card wide" id="card-pace"></section>
+      <section class="card wide" id="card-age"></section>
+      <section class="card wide" id="card-chapters"></section>
+      <section class="card wide" id="card-regions"></section>
+      <section class="card wide" id="card-calendar"></section>
+      <section class="card wide" id="card-places"></section>
+      <section class="card wide" id="card-place-years"></section>
+      <section class="card wide" id="card-explore"></section>
+      <section class="card" id="card-hours"></section>
+      <section class="card" id="card-weekdays"></section>
+    </div>
+
+    <div class="grid">
+      <section class="card" aria-labelledby="records-title">
+        <div class="card-head"><h2 id="records-title"><span class="badge small"><img src="images/openmoji/mountain.svg" alt=""></span>Records</h2></div>
+        <dl class="records" id="records"></dl>
+      </section>
+      <section class="card" aria-labelledby="mymaps-title">
+        <div class="card-head">
+          <h2 id="mymaps-title"><span class="badge small"><img src="images/openmoji/backpack.svg" alt=""></span>Google My Maps</h2>
+          <p class="card-note">Your routes as KML, ready for Google My Maps or Google Earth.</p>
+        </div>
+        <div id="mymaps"></div>
+      </section>
+    </div>
+
+    <section class="card" aria-labelledby="log-title">
+      <div class="card-head">
+        <h2 id="log-title"><span class="badge small"><img src="images/openmoji/water-bottle.svg" alt=""></span>Walk log</h2>
+        <p class="card-note">Click a row to show it on the map. Click a column heading to sort.</p>
+      </div>
+      <div class="table-wrap">
+        <table class="log" id="log"></table>
+      </div>
+      <button type="button" class="link-button" id="log-more"></button>
+    </section>
+  </main>
+
+  <footer class="page-footer">
+    <p>GPS data recorded with MapMyWalk, cleaned and summarized by GoneWalking.
+      Map data &copy; OpenStreetMap contributors. Illustrations from
+      <a href="https://openmoji.org/">OpenMoji</a>, licensed
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>. <span id="updated"></span></p>
+  </footer>
+
+  <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="config.js"></script>
+  <script src="data/workouts.js"></script>
+  <script src="data/routes.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
