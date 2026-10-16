@@ -102,7 +102,10 @@ To view it locally, open `docs/index.html` in a browser, or serve it:
 python -m http.server 8000 -d docs     # then visit http://localhost:8000
 ```
 
-A walk can be linked directly with `#walk={workout_id}` on the end of the URL.
+The address keeps track of what you're looking at, so views can be linked and bookmarked:
+`#place=Murphy-Hanrehan%20Park%20Reserve` opens a place with its walk list beside the map, and
+`#walk={workout_id}` (optionally after a place, joined with `&`) opens one walk. The browser's
+Back and Forward move between a place's walk list and its walks.
 
 ### Clean stats (`data/workouts_clean.csv`)
 

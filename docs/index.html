@@ -7,6 +7,13 @@
   <meta name="description" content="Every walk since 2016: miles, pace, routes and records, from MapMyWalk GPS data.">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <link rel="stylesheet" href="style.css">
+  <script>
+    // Season for dark mode's colors (Northern Hemisphere, by month): set before the page draws.
+    (function () {
+      var m = new Date().getMonth();
+      document.documentElement.dataset.season = m < 2 || m === 11 ? "winter" : m < 5 ? "spring" : m < 8 ? "summer" : "autumn";
+    })();
+  </script>
 </head>
 <body>
   <header class="page-header">
@@ -51,6 +58,14 @@
         <span id="activity-label">Activity</span>
         <div class="segmented" role="radiogroup" aria-labelledby="activity-label" id="filter-activity"></div>
       </div>
+      <div class="filter section-controls">
+        <span>Sections</span>
+        <div>
+          <button type="button" class="link-button" id="expand-all">Expand all</button>
+          <span aria-hidden="true">·</span>
+          <button type="button" class="link-button" id="collapse-all">Collapse all</button>
+        </div>
+      </div>
     </div>
 
     <section class="hero" aria-label="Summary">
@@ -62,7 +77,7 @@
       <div class="tiles" id="tiles"></div>
     </section>
 
-    <section class="card map-card" aria-labelledby="map-title">
+    <section class="card map-card" id="card-map" aria-labelledby="map-title">
       <div class="card-head">
         <h2 id="map-title"><span class="badge small"><img src="images/openmoji/compass.svg" alt=""></span>Routes</h2>
         <p class="card-note" id="map-note">Click a route to see its details and pace along the way.</p>
@@ -89,11 +104,11 @@
     </div>
 
     <div class="grid">
-      <section class="card" aria-labelledby="records-title">
+      <section class="card" id="card-records" aria-labelledby="records-title">
         <div class="card-head"><h2 id="records-title"><span class="badge small"><img src="images/openmoji/mountain.svg" alt=""></span>Records</h2></div>
         <dl class="records" id="records"></dl>
       </section>
-      <section class="card" aria-labelledby="mymaps-title">
+      <section class="card" id="card-mymaps" aria-labelledby="mymaps-title">
         <div class="card-head">
           <h2 id="mymaps-title"><span class="badge small"><img src="images/openmoji/backpack.svg" alt=""></span>Google My Maps</h2>
           <p class="card-note">Your routes as KML, ready for Google My Maps or Google Earth.</p>
@@ -102,7 +117,7 @@
       </section>
     </div>
 
-    <section class="card" aria-labelledby="log-title">
+    <section class="card" id="card-log" aria-labelledby="log-title">
       <div class="card-head">
         <h2 id="log-title"><span class="badge small"><img src="images/openmoji/water-bottle.svg" alt=""></span>Walk log</h2>
         <p class="card-note">Click a row to show it on the map. Click a column heading to sort.</p>

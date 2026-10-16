@@ -259,14 +259,14 @@
     regionSelect.value = state.region;
     regionSelect.onchange = () => { state.region = regionSelect.value; state.selected = null; state.showAll = false; renderAll(); };
 
-    // Places, most visited first, for the current activity (and year).
+    // Places A–Z (with visit counts), for the current activity (and year).
     const counts = new Map();
     for (const w of filtered(state.year, { anyPlace: true })) counts.set(placeName(w), (counts.get(placeName(w)) || 0) + 1);
     if (state.place !== "all" && !counts.has(state.place)) counts.set(state.place, 0);
     const placeSelect = $("filter-place");
     placeSelect.replaceChildren(
       el("option", { value: "all", text: "All places" }),
-      ...[...counts.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      ...[...counts.entries()].sort((a, b) => a[0].localeCompare(b[0], "en", { sensitivity: "base", numeric: true }))
         .map(([name, n]) => el("option", { value: name, text: `${name} (${n})` })));
     placeSelect.value = state.place;
     placeSelect.onchange = () => setPlace(placeSelect.value);
@@ -283,6 +283,7 @@
     state.selected = null;
     state.showAll = false;
     renderAll();
+    writeHash();
   }
 
   function setYear(year) {
@@ -1399,15 +1400,20 @@
     if (zoom) map.fitBounds(L.latLngBounds(ll.flat()), { padding: [30, 30], maxZoom: 16 });
   }
 
-  function selectWalk(id, scrollToMap) {
+  function selectWalk(id, scrollToMap, { push = false } = {}) {
     state.selected = id;
+    const mapCard = $("card-map");
+    if (mapCard.classList.contains("collapsed")) {
+      setCollapsed(mapCard, false, { redraw: false });
+      if (map) map.invalidateSize();
+    }
     const w = workouts.find((x) => x.id === id);
     if (w && state.year !== "all" && w.year !== state.year) { state.year = w.year; $("filter-year").value = String(w.year); renderAll(); }
     renderMap(false);
     drawSelected(true);
     renderDetail();
     renderLog();
-    history.replaceState(null, "", `#walk=${id}`);
+    writeHash(push);
     if (scrollToMap) document.querySelector(".map-card").scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
@@ -1420,10 +1426,92 @@
     return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${esc(title)}</name>${lines.join("")}</Document></kml>\n`;
   }
 
+  /** Keep the address in sync: #place=<name>&walk=<id>. push adds a history entry (for Back). */
+  function writeHash(push = false) {
+    const parts = [];
+    if (state.place !== "all") parts.push(`place=${encodeURIComponent(state.place)}`);
+    if (state.selected != null) parts.push(`walk=${state.selected}`);
+    const hash = parts.length ? `#${parts.join("&")}` : location.pathname + location.search;
+    // Stepping newer/older replaces the entry but remembers it was opened from the list.
+    const fromList = push || Boolean(state.selected != null && history.state && history.state.fromList);
+    const entry = { walk: state.selected, fromList };
+    if (push) history.pushState(entry, "", hash); else history.replaceState(entry, "", hash);
+  }
+
+  /** Back to the overview (or the place's walk list) with nothing selected. */
+  function clearSelection() {
+    state.selected = null;
+    writeHash();
+    renderMap(true);
+    renderDetail();
+    renderLog();
+  }
+
+  /** Walks in the current selection at the chosen place, newest first. */
+  const placeWalks = () => filtered().slice().sort((a, b) => b.day - a.day || (b.start || "").localeCompare(a.start || ""));
+
+  /** Emphasize one route on the map while its list row is hovered. */
+  function previewRoute(id, on) {
+    const line = routeLines.get(id);
+    if (!line || state.selected != null) return;
+    line.setStyle(on ? { color: css("--series-2"), weight: 5, opacity: 1 } : { color: css("--series-1"), weight: 2, opacity: 0.55 });
+    if (on) line.bringToFront();
+  }
+
+  function renderPlaceWalks(box) {
+    const info = activityInfo();
+    const list = placeWalks();
+    const total = sum(list, (w) => w.mi);
+    const first = list.length ? list[list.length - 1] : null;
+    const url = list.find((w) => w.url) ? list.find((w) => w.url).url : null;
+    const items = list.map((w) => {
+      const row = el("li", {}, el("button", { type: "button", class: "walk-item", onclick: () => selectWalk(w.id, false, { push: true }) }, [
+        el("span", { class: "walk-item-date", text: fmtDate(w.day) }),
+        el("span", { class: "walk-item-stats", text: `${fmtMi(w.mi)} · ${fmtPace(w.pace)} /mi` }),
+        w.detail ? el("span", { class: "walk-item-sub", text: w.detail }) : null,
+      ]));
+      row.addEventListener("pointerenter", () => previewRoute(w.id, true));
+      row.addEventListener("pointerleave", () => previewRoute(w.id, false));
+      row.addEventListener("focusin", () => previewRoute(w.id, true));
+      row.addEventListener("focusout", () => previewRoute(w.id, false));
+      return row;
+    });
+    box.replaceChildren(
+      el("h3", {}, url ? el("a", { href: url, target: "_blank", rel: "noopener", text: `${state.place} ↗` }) : state.place),
+      el("div", { class: "when", text: list.length
+        ? `${fmtNum(list.length)} ${list.length === 1 ? info.noun : info.nouns} · ${fmtMi(total)}${first ? ` · since ${fmtDate(first.day, { month: "short", year: "numeric" })}` : ""}`
+        : `No ${info.nouns} here in this selection.` }),
+      el("p", { class: "placeholder small", text: `Pick a ${info.noun} to see its route and details.` }),
+      el("ol", { class: "walk-list" }, items),
+      el("button", { type: "button", class: "link-button", text: "Show all places", onclick: () => setPlace("all") }));
+  }
+
+  /** Back to the list, plus newer/older, when browsing a place's walks. */
+  function placeNav(w) {
+    if (state.place === "all") return null;
+    const list = placeWalks();
+    const i = list.findIndex((x) => x.id === w.id);
+    if (i < 0) return null;
+    const go = (x) => selectWalk(x.id, false);
+    return el("div", { class: "walk-nav" }, [
+      el("button", { type: "button", class: "link-button back", text: `← All ${fmtNum(list.length)} at ${state.place}`, onclick: () => {
+        // Opened from the list: step back in history (so Forward works too). Opened from a link: just clear.
+        if (history.state && history.state.fromList) history.back(); else clearSelection();
+      } }),
+      el("div", { class: "walk-nav-steps" }, [
+        el("button", { type: "button", class: "step", text: "‹ Newer", disabled: i === 0 ? "" : null, "aria-label": "Newer walk", onclick: () => go(list[i - 1]) }),
+        // Numbered oldest-first, to match "Visit N of M" below.
+        el("span", { class: "walk-nav-pos", text: `Visit ${list.length - i} of ${list.length}` }),
+        el("button", { type: "button", class: "step", text: "Older ›", disabled: i === list.length - 1 ? "" : null, "aria-label": "Older walk", onclick: () => go(list[i + 1]) }),
+      ]),
+    ]);
+  }
+
   function renderDetail() {
     const box = $("walk-detail");
     const w = workouts.find((x) => x.id === state.selected);
     if (!w) {
+      if (state.place !== "all") { renderPlaceWalks(box); return; }
       box.replaceChildren(
         el("h3", { text: "No route selected" }),
         el("p", { class: "placeholder", text: "Click a route on the map, a dot in the pace chart, a day in the calendar, or a row in the walk log." }));
@@ -1448,6 +1536,7 @@
     const time = w.start ? new Date(w.start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : "";
     const ageText = w.age != null ? ` · age ${w.age}` : "";
     box.replaceChildren(...[
+      placeNav(w),
       el("h3", { text: `${fmtMi(w.mi)} ${w.activity === "Walk" ? "walk" : "ride"}` }),
       el("div", { class: "when", text: `${fmtDate(w.day, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}${time ? ` · ${time}` : ""}${ageText}` }),
       placeLine(w) ? el("div", { class: "where" }, w.place && w.url ? [
@@ -1467,7 +1556,7 @@
         el("a", { href: w.link.replace("http://", "https://"), target: "_blank", rel: "noopener", text: "View on MapMyWalk ↗" }),
         w.latlon ? el("a", { href: `https://www.google.com/maps/search/?api=1&query=${w.latlon[0]},${w.latlon[1]}`, target: "_blank", rel: "noopener", text: "Start point in Google Maps ↗" }) : null,
         el("a", { href: kmlUrl, download: `${w.date}-${w.id}.kml`, text: "Download this route (KML)" }),
-        el("button", { type: "button", class: "link-button", text: "Clear selection", onclick: () => { state.selected = null; history.replaceState(null, "", location.pathname); renderMap(true); renderDetail(); renderLog(); } }),
+        state.place === "all" ? el("button", { type: "button", class: "link-button", text: "Clear selection", onclick: () => clearSelection() }) : null,
       ]),
     ].filter(Boolean));
   }
@@ -1535,6 +1624,71 @@
     matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { label(); renderAll(false); });
   }
 
+  // ---------- collapsible sections ----------
+  // Every card can be collapsed from its heading. Pace over time and everything after it start
+  // collapsed; each viewer's choices are remembered in this browser.
+  const FIRST_COLLAPSED = "card-pace";
+  let collapsedPrefs = {};
+  try { collapsedPrefs = JSON.parse(localStorage.getItem("gw-collapsed") || "{}") || {}; } catch (e) { /* storage unavailable */ }
+  const cards = () => [...document.querySelectorAll("main section.card[id]")];
+
+  function isCollapsedByDefault(card) {
+    const all = cards();
+    const first = all.findIndex((c) => c.id === FIRST_COLLAPSED);
+    return first >= 0 && all.indexOf(card) >= first;
+  }
+
+  function rerenderCharts() {
+    renderYears(); renderMonths(); renderPace(); renderAge(); renderRegions();
+    renderCalendar(); renderExplore(); renderHours(); renderWeekdays();
+  }
+
+  function setCollapsed(card, collapsed, { save = true, redraw = true } = {}) {
+    const was = card.classList.contains("collapsed");
+    card.classList.toggle("collapsed", collapsed);
+    const btn = card.querySelector(":scope > .card-head .collapse-toggle");
+    if (btn) {
+      btn.setAttribute("aria-expanded", String(!collapsed));
+      btn.setAttribute("aria-label", `${collapsed ? "Expand" : "Collapse"} ${card.querySelector("h2")?.textContent.trim() || "section"}`);
+    }
+    if (save) {
+      collapsedPrefs[card.id] = collapsed;
+      try { localStorage.setItem("gw-collapsed", JSON.stringify(collapsedPrefs)); } catch (e) { /* ignore */ }
+    }
+    // Charts measured while hidden need redrawing at their real width.
+    if (redraw && was && !collapsed) {
+      if (card.id === "card-map" && map) { map.invalidateSize(); renderMap(state.selected == null); drawSelected(state.selected != null); }
+      else rerenderCharts();
+    }
+  }
+
+  /** Add the toggle to a card's heading (render functions rebuild headings, so this runs again after each). */
+  function decorateCard(card) {
+    const h2 = card.querySelector(":scope > .card-head h2");
+    if (!h2 || h2.querySelector(".collapse-toggle")) return;
+    const btn = el("button", { type: "button", class: "collapse-toggle", "aria-controls": card.id });
+    btn.addEventListener("click", (e) => { e.stopPropagation(); setCollapsed(card, !card.classList.contains("collapsed")); });
+    h2.prepend(btn);
+    h2.classList.add("collapsible");
+    h2.addEventListener("click", (e) => { if (!e.target.closest("a, button")) btn.click(); });
+    setCollapsed(card, card.classList.contains("collapsed"), { save: false, redraw: false });
+  }
+
+  function initCollapsible() {
+    for (const card of cards()) {
+      const pref = collapsedPrefs[card.id];
+      card.classList.toggle("collapsed", pref !== undefined ? pref : isCollapsedByDefault(card));
+      decorateCard(card);
+      new MutationObserver(() => decorateCard(card)).observe(card, { childList: true });
+    }
+    $("expand-all").addEventListener("click", () => {
+      cards().forEach((c) => setCollapsed(c, false, { redraw: false }));
+      rerenderCharts();
+      if (map) { map.invalidateSize(); renderMap(state.selected == null); drawSelected(state.selected != null); }
+    });
+    $("collapse-all").addEventListener("click", () => cards().forEach((c) => setCollapsed(c, true, { redraw: false })));
+  }
+
   // ---------- render ----------
   function renderAll(fit = true) {
     renderFilters();
@@ -1572,20 +1726,38 @@
     if (!(CONFIG.siteTitle || "").includes(first)) $("byline").textContent = `Walks by ${CONFIG.ownerName}`;
     $("portrait").alt = `Photo of ${CONFIG.ownerName}`;
   }
+  if (CONFIG.season && CONFIG.season !== "auto") {
+    if (CONFIG.season === "none") delete document.documentElement.dataset.season;
+    else document.documentElement.dataset.season = CONFIG.season;
+  }
   initTheme();
+  initCollapsible();
   initMap();
   renderAll();
-  const linked = /walk=(\d+)/.exec(location.hash);
-  if (linked && workouts.some((w) => w.id === linked[1])) {
-    const w = workouts.find((x) => x.id === linked[1]);
-    if (state.activity !== "all" && w.activity !== state.activity) { state.activity = "all"; renderAll(); }
-    selectWalk(w.id, false);
+  function readHash() {
+    const q = new URLSearchParams(location.hash.slice(1));
+    const place = q.get("place") || "all";
+    const walk = workouts.find((w) => w.id === q.get("walk"));
+    if (place !== state.place) {
+      state.place = place;
+      state.selected = null;
+      renderAll();
+    }
+    if (walk) {
+      if (state.activity !== "all" && walk.activity !== state.activity) { state.activity = "all"; renderAll(); }
+      if (walk.id !== state.selected) selectWalk(walk.id, false);
+    } else if (state.selected != null) {
+      state.selected = null;
+      renderMap(true); renderDetail(); renderLog();
+    }
   }
+  window.addEventListener("popstate", readHash);
+  readHash();
   $("updated").textContent = `Data updated ${fmtDate(new Date(DATA.meta.updated), { month: "long", day: "numeric", year: "numeric" })}.`;
 
   let resizeTimer;
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => { renderYears(); renderMonths(); renderPace(); renderAge(); renderRegions(); renderCalendar(); renderExplore(); renderHours(); renderWeekdays(); }, 150);
+    resizeTimer = setTimeout(rerenderCharts, 150);
   });
 })();

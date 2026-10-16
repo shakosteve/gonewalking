@@ -326,9 +326,9 @@ h2 { margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: c
 .map-view-toggle button { font-size: 13px; }
 /* OpenStreetMap has no dark tiles; darken the light ones in dark mode. */
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9); }
+  :root:not([data-theme="light"]) .leaflet-tile-pane { filter: var(--tile-filter, invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9)); }
 }
-:root[data-theme="dark"] .leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9); }
+:root[data-theme="dark"] .leaflet-tile-pane { filter: var(--tile-filter, invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9)); }
 .walk-detail { font-size: 14px; min-width: 0; }
 .walk-detail h3 { margin: 0 0 2px; font-size: 18px; font-weight: 600; }
 .walk-detail .when { color: var(--text-secondary); font-size: 13px; margin-bottom: 12px; }
@@ -472,3 +472,144 @@ code { font-size: 12px; background: var(--page); border: 1px solid var(--border)
 .trips td.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .trips .rec-sub { display: block; }
 @media (max-width: 860px) { .region-grid { grid-template-columns: 1fr; } }
+
+/* Walks at a place (map sidebar) */
+.walk-detail .placeholder.small { font-size: 13px; margin: 0 0 8px; }
+.walk-list { list-style: none; margin: 0 0 10px; padding: 0; max-height: 360px; overflow-y: auto; border-top: 1px solid var(--grid); }
+.walk-list li { border-bottom: 1px solid var(--grid); }
+.walk-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0 8px;
+  width: 100%;
+  padding: 7px 6px;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  color: var(--text-primary);
+  background: none;
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.walk-item:hover, .walk-item:focus-visible { background: var(--hover-wash); outline: none; box-shadow: inset 3px 0 0 var(--series-2); }
+.walk-item-date { font-weight: 600; }
+.walk-item-stats { color: var(--text-secondary); font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; }
+.walk-item-sub { grid-column: 1 / -1; color: var(--text-muted); font-size: 12px; }
+.walk-nav { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--grid); }
+.walk-nav .back { align-self: flex-start; text-align: left; }
+.walk-nav-steps { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.walk-nav-pos { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.walk-nav .step {
+  font: inherit;
+  font-size: 13px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.walk-nav .step:hover:not([disabled]) { background: var(--hover-wash); }
+.walk-nav .step[disabled] { color: var(--text-muted); cursor: default; opacity: 0.5; }
+
+/* Collapsible sections */
+.card-head h2.collapsible { cursor: pointer; user-select: none; }
+.collapse-toggle {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-left: -4px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.collapse-toggle::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+  transition: transform 0.15s ease;
+}
+.card.collapsed .collapse-toggle::before { transform: rotate(-45deg); }
+.collapse-toggle:hover, .collapse-toggle:focus-visible { background: var(--hover-wash); color: var(--text-primary); }
+.card.collapsed { padding-bottom: 14px; }
+.card.collapsed > :not(.card-head) { display: none !important; }
+.card.collapsed > .card-head { margin-bottom: 0; }
+.card.collapsed > .card-head > :not(h2) { display: none; }
+.section-controls > div { display: flex; gap: 6px; align-items: center; padding: 5px 0; color: var(--text-muted); }
+@media (prefers-reduced-motion: reduce) { .collapse-toggle::before { transition: none; } }
+
+/* ---------- Seasonal dark mode ----------
+   The page sets data-season on <html> from today's date (see index.html). A season's block
+   below re-colors dark mode only; seasons without a block use the standard dark colors.
+   Chart colors were checked with the dataviz palette validator against the season's surface. */
+@media (prefers-color-scheme: dark) {
+  :root[data-season="autumn"]:not([data-theme="light"]) {
+    --page: #15100c;
+    --surface: #1f1812;
+    --text-primary: #f3ebe2;
+    --text-secondary: #cdbfae;
+    --text-muted: #9a8b7a;
+    --grid: #33281f;
+    --axis: #4a3b2e;
+    --border: rgba(255, 228, 196, 0.12);
+    --hover-wash: rgba(255, 196, 140, 0.07);
+    --badge: #ece2d6;
+    --deemph: #54453a;
+    --series-1: #cf6d2c;   /* pumpkin */
+    --series-2: #1f9e7a;   /* pine */
+    --series-3: #b5891a;   /* gold */
+    --series-4: #c2444f;   /* cranberry */
+    --good: #7fbf5a;
+    --bad: #e8806e;
+    --seq-1: #7a3a14;
+    --seq-2: #a24f1f;
+    --seq-3: #c9692c;
+    --seq-4: #e58d4c;
+    --seq-5: #f4b886;
+    --cal-0: #2b2119;
+    --cal-1: #6e3412;
+    --cal-2: #a24f1f;
+    --cal-3: #d06e2e;
+    --cal-4: #f4b886;
+    --tile-filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) sepia(0.35);
+  }
+}
+:root[data-season="autumn"][data-theme="dark"] {
+  --page: #15100c;
+  --surface: #1f1812;
+  --text-primary: #f3ebe2;
+  --text-secondary: #cdbfae;
+  --text-muted: #9a8b7a;
+  --grid: #33281f;
+  --axis: #4a3b2e;
+  --border: rgba(255, 228, 196, 0.12);
+  --hover-wash: rgba(255, 196, 140, 0.07);
+  --badge: #ece2d6;
+  --deemph: #54453a;
+  --series-1: #cf6d2c;
+  --series-2: #1f9e7a;
+  --series-3: #b5891a;
+  --series-4: #c2444f;
+  --good: #7fbf5a;
+  --bad: #e8806e;
+  --seq-1: #7a3a14;
+  --seq-2: #a24f1f;
+  --seq-3: #c9692c;
+  --seq-4: #e58d4c;
+  --seq-5: #f4b886;
+  --cal-0: #2b2119;
+  --cal-1: #6e3412;
+  --cal-2: #a24f1f;
+  --cal-3: #d06e2e;
+  --cal-4: #f4b886;
+  --tile-filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) sepia(0.35);
+}
