@@ -241,6 +241,16 @@ h2 { margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: c
 .card-head .card-note { flex-basis: 100%; }
 .card-note { margin: 0; font-size: 13px; color: var(--text-muted); }
 .card-actions { display: flex; gap: 8px; }
+.card-select {
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 6px;
+  margin-right: auto;
+}
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .grid .card { margin-bottom: 0; }
 .grid + .grid, .grid + .card { margin-top: 16px; }
@@ -545,6 +555,18 @@ code { font-size: 12px; background: var(--page); border: 1px solid var(--border)
 .card.collapsed > .card-head { margin-bottom: 0; }
 .card.collapsed > .card-head > :not(h2) { display: none; }
 .section-controls > div { display: flex; gap: 6px; align-items: center; padding: 5px 0; color: var(--text-muted); }
+.reset-button {
+  margin-left: auto;
+  font: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.reset-button:hover, .reset-button:focus-visible { background: var(--hover-wash); }
 @media (prefers-reduced-motion: reduce) { .collapse-toggle::before { transition: none; } }
 
 /* ---------- Seasonal dark mode ----------

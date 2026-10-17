@@ -48,7 +48,8 @@
   ].sort((a, b) => a.date - b.date);
   const today = new Date();
 
-  const state = { year: "all", activity: "Walk", place: "all", home: "all", region: "all", selected: null, sort: { key: "date", dir: -1 }, showAll: false };
+  const defaultState = () => ({ year: "all", activity: "Walk", place: "all", home: "all", region: "all", selected: null, sort: { key: "date", dir: -1 }, showAll: false, calYear: null });
+  const state = defaultState();
 
   // Regions, nearest to farthest; each keeps a fixed color slot so filtering never repaints them.
   const REGIONS = (DATA.meta && DATA.meta.regions) || ["Twin Cities metro", "Greater Minnesota", "Other U.S. states", "Outside the U.S."];
@@ -288,6 +289,7 @@
 
   function setYear(year) {
     state.year = year;
+    state.calYear = null;
     state.selected = null;
     state.showAll = false;
     $("filter-year").value = String(year);
@@ -874,8 +876,9 @@
     });
   }
 
+  /** The calendar shows the Year filter's year (or the latest), unless its own picker chose another. */
   function renderCalendar() {
-    const year = state.year === "all" ? years[0] : state.year;
+    const year = state.calYear ?? (state.year === "all" ? years[0] : state.year);
     const list = filtered(year);
     const byDay = new Map();
     for (const w of list) byDay.set(w.date, (byDay.get(w.date) || 0) + w.mi);
@@ -883,9 +886,13 @@
     const binOf = (mi) => (mi == null ? 0 : mi < bins[1] ? 1 : mi < bins[2] ? 2 : mi < bins[3] ? 3 : 4);
     const chart = chartCard($("card-calendar"), {
       title: `${year} day by day`,
-      note: state.year === "all" ? "Showing the latest year. Pick a year above to see another." : null,
       table: { head: ["Date", "Miles"], rows: [...byDay.entries()].sort().reverse().map(([d, mi]) => [d, fmtNum(mi, 2)]) },
     });
+    const picker = el("select", { class: "card-select", "aria-label": "Calendar year" }, years.map((y) => el("option", { value: y, text: y })));
+    picker.value = String(year);
+    picker.onchange = () => { state.calYear = Number(picker.value); renderCalendar(); };
+    const head = $("card-calendar").querySelector(".card-head");
+    head.insertBefore(picker, head.querySelector("h2").nextSibling);
 
     const width = Math.max(chart.clientWidth, 280);
     const jan1 = new Date(year, 0, 1);
@@ -937,7 +944,12 @@
 
   const placeName = (w) => w.place || w.city || "Unknown";
   const withDetail = (w) => (w.detail ? `${placeName(w)} · ${w.detail}` : placeName(w));
-  const placeLine = (w) => [w.place ? withDetail(w) : null, w.city, w.state || w.country].filter(Boolean).join(", ");
+  /** City and state (or country) for a place line, leaving out names already said, e.g. Mexico City, Mexico. */
+  const whereParts = (w) => {
+    const last = w.state && w.state !== w.place ? w.state : w.country;
+    return [w.city, last].filter((s, i, a) => s && s !== w.place && a.indexOf(s) === i);
+  };
+  const placeLine = (w) => [w.place ? withDetail(w) : null, ...whereParts(w)].filter(Boolean).join(", ");
 
   const capital = (s) => s[0].toUpperCase() + s.slice(1);
 
@@ -949,7 +961,7 @@
       let t = totals.get(key);
       if (!t) {
         t = { name: key, url: w.place ? w.url : null, mi: 0, count: 0, secs: 0, paceMi: 0, first: w.day, last: w.day,
-              sub: w.place ? [w.city, w.state].filter(Boolean).join(", ") : (w.state || w.country || "") };
+              sub: w.place ? whereParts(w).join(", ") : (w.state || w.country || "") };
         totals.set(key, t);
       }
       t.mi += w.mi; t.count += 1;
@@ -1402,11 +1414,6 @@
 
   function selectWalk(id, scrollToMap, { push = false } = {}) {
     state.selected = id;
-    const mapCard = $("card-map");
-    if (mapCard.classList.contains("collapsed")) {
-      setCollapsed(mapCard, false, { redraw: false });
-      if (map) map.invalidateSize();
-    }
     const w = workouts.find((x) => x.id === id);
     if (w && state.year !== "all" && w.year !== state.year) { state.year = w.year; $("filter-year").value = String(w.year); renderAll(); }
     renderMap(false);
@@ -1542,7 +1549,7 @@
       placeLine(w) ? el("div", { class: "where" }, w.place && w.url ? [
         el("a", { href: w.url, target: "_blank", rel: "noopener", text: `${w.place} ↗` }),
         w.detail ? ` · ${w.detail}` : null,
-        [w.city, w.state || w.country].filter(Boolean).length ? `, ${[w.city, w.state || w.country].filter(Boolean).join(", ")}` : null,
+        whereParts(w).length ? `, ${whereParts(w).join(", ")}` : null,
       ] : placeLine(w)) : null,
       el("p", { class: "visit", text: visitText }),
       w.notes ? el("p", { class: "notes", text: `“${w.notes}”` }) : null,
@@ -1625,18 +1632,12 @@
   }
 
   // ---------- collapsible sections ----------
-  // Every card can be collapsed from its heading. Pace over time and everything after it start
-  // collapsed; each viewer's choices are remembered in this browser.
-  const FIRST_COLLAPSED = "card-pace";
+  // Routes, Miles by year and Miles by month are always open. Every other card can be collapsed
+  // from its heading and starts collapsed; each viewer's choices are remembered in this browser.
+  const ALWAYS_OPEN = new Set(["card-map", "card-years", "card-months"]);
   let collapsedPrefs = {};
   try { collapsedPrefs = JSON.parse(localStorage.getItem("gw-collapsed") || "{}") || {}; } catch (e) { /* storage unavailable */ }
-  const cards = () => [...document.querySelectorAll("main section.card[id]")];
-
-  function isCollapsedByDefault(card) {
-    const all = cards();
-    const first = all.findIndex((c) => c.id === FIRST_COLLAPSED);
-    return first >= 0 && all.indexOf(card) >= first;
-  }
+  const cards = () => [...document.querySelectorAll("main section.card[id]")].filter((c) => !ALWAYS_OPEN.has(c.id));
 
   function rerenderCharts() {
     renderYears(); renderMonths(); renderPace(); renderAge(); renderRegions();
@@ -1656,10 +1657,7 @@
       try { localStorage.setItem("gw-collapsed", JSON.stringify(collapsedPrefs)); } catch (e) { /* ignore */ }
     }
     // Charts measured while hidden need redrawing at their real width.
-    if (redraw && was && !collapsed) {
-      if (card.id === "card-map" && map) { map.invalidateSize(); renderMap(state.selected == null); drawSelected(state.selected != null); }
-      else rerenderCharts();
-    }
+    if (redraw && was && !collapsed) rerenderCharts();
   }
 
   /** Add the toggle to a card's heading (render functions rebuild headings, so this runs again after each). */
@@ -1676,17 +1674,29 @@
 
   function initCollapsible() {
     for (const card of cards()) {
-      const pref = collapsedPrefs[card.id];
-      card.classList.toggle("collapsed", pref !== undefined ? pref : isCollapsedByDefault(card));
+      card.classList.toggle("collapsed", collapsedPrefs[card.id] ?? true);
       decorateCard(card);
       new MutationObserver(() => decorateCard(card)).observe(card, { childList: true });
     }
     $("expand-all").addEventListener("click", () => {
       cards().forEach((c) => setCollapsed(c, false, { redraw: false }));
       rerenderCharts();
-      if (map) { map.invalidateSize(); renderMap(state.selected == null); drawSelected(state.selected != null); }
     });
     $("collapse-all").addEventListener("click", () => cards().forEach((c) => setCollapsed(c, true, { redraw: false })));
+  }
+
+  /** Everything back to how a first visit sees it: filters, map extent, sorting, sections, address. */
+  function resetView() {
+    Object.assign(state, defaultState());
+    mapView = "home";
+    collapsedPrefs = {};
+    try { localStorage.removeItem("gw-collapsed"); } catch (e) { /* ignore */ }
+    cards().forEach((c) => setCollapsed(c, true, { save: false, redraw: false }));
+    hideTip();
+    writeHash();
+    if (map) map.invalidateSize();
+    renderAll();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   // ---------- render ----------
@@ -1732,6 +1742,7 @@
   }
   initTheme();
   initCollapsible();
+  $("reset-view").addEventListener("click", resetView);
   initMap();
   renderAll();
   function readHash() {
