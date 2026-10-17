@@ -375,7 +375,7 @@
       return { key: i + 1, label: name, short: name[0] + (window.innerWidth < 500 ? "" : name.slice(1, 3)), value: sum(inMonth, (w) => w.mi), tip: `${name} · ${inMonth.length} ${activityInfo().nouns}` };
     });
     const chart = chartCard($("card-months"), {
-      title: state.year === "all" ? "Miles by month, all years" : `Miles by month, ${state.year}`,
+      title: state.year === "all" ? "Miles by month, all years" : `Miles by month, ${state.year}`, art: "maple-leaf",
       note: state.year === "all" ? "Which months you walk most, added up across every year." : null,
       table: { head: ["Month", "Miles"], rows: items.map((d) => [d.label, fmtNum(d.value, 1)]) },
     });
@@ -400,7 +400,7 @@
     const list = filtered();
     const items = WEEKDAYS.map((d, i) => ({ key: i, label: d, value: list.filter((w) => w.weekday === i).length }));
     const chart = chartCard($("card-weekdays"), {
-      title: "Day of the week",
+      title: "Day of the week", art: "spiral-calendar",
       note: `${activityInfo().nouns[0].toUpperCase() + activityInfo().nouns.slice(1)} on each day.`,
       table: { head: ["Day", activityInfo().nouns[0].toUpperCase() + activityInfo().nouns.slice(1)], rows: items.map((d) => [d.label, fmtNum(d.value)]) },
     });
@@ -887,7 +887,7 @@
     const bins = [0, 2, 4, 6];
     const binOf = (mi) => (mi == null ? 0 : mi < bins[1] ? 1 : mi < bins[2] ? 2 : mi < bins[3] ? 3 : 4);
     const chart = chartCard($("card-calendar"), {
-      title: `${year} day by day`,
+      title: `${year} day by day`, art: "calendar",
       table: { head: ["Date", "Miles"], rows: [...byDay.entries()].sort().reverse().map(([d, mi]) => [d, fmtNum(mi, 2)]) },
     });
     const picker = el("select", { class: "card-select", "aria-label": "Calendar year" }, years.map((y) => el("option", { value: y, text: y })));
@@ -1054,7 +1054,7 @@
     const bin = (mi) => (!mi ? 0 : mi < edges[0] ? 1 : mi < edges[1] ? 2 : mi < edges[2] ? 3 : 4);
 
     const chart = chartCard($("card-place-years"), {
-      title: byYear ? "Places over the years" : `Places month by month, ${state.year}`,
+      title: byYear ? "Places over the years" : `Places month by month, ${state.year}`, art: "world-map",
       note: `Miles at each of your top places, ${byYear ? "year by year" : "by month"}. Shows which spots you've taken up, dropped, or keep coming back to.`,
       table: {
         head: ["Place", ...cols.map((c) => (byYear ? String(c) : MONTHS[c - 1]))],
@@ -1111,7 +1111,7 @@
       return { key: y, label: String(y), short: `'${String(y).slice(2)}`, values: [fresh.length, visited.size - fresh.length], fresh };
     });
     const chart = chartCard(card, {
-      title: "Exploring",
+      title: "Exploring", art: "national-park",
       note: `Places you ${info.verb === "walked" ? "walked" : "went"} each year: new to you, or returning favorites.${state.year !== "all" ? ` ${state.year} is highlighted.` : ""}`,
       table: { head: ["Year", "New places", "Returning places"], rows: items.slice().reverse().map((d) => [d.label, fmtNum(d.values[0]), fmtNum(d.values[1])]) },
     });
