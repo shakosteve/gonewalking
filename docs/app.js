@@ -1395,18 +1395,24 @@
     selectedLayer.clearLayers();
     const id = state.selected;
     if (id == null || !ROUTES[id]) return;
-    const { pieces } = paceBands(id);
     const surface = css("--surface");
     const ll = latlngs(id);
-    ll.forEach((seg) => L.polyline(seg, { color: surface, weight: 8, opacity: 0.9, interactive: false }).addTo(selectedLayer));
-    // Merge consecutive pieces of the same band into one polyline.
-    let run = null;
-    const flush = () => { if (run) L.polyline(run.pts, { color: css(`--seq-${run.band}`), weight: 4, opacity: 1, interactive: false }).addTo(selectedLayer); };
-    for (const p of pieces) {
-      if (run && run.band === p.band && run.last === p.a) { run.pts.push(p.b); run.last = p.b; }
-      else { flush(); run = { band: p.band, pts: [p.a, p.b], last: p.b }; }
+    // While the pointer is on the walk's card, show the whole route in one bright color instead of pace.
+    if (detailHover) {
+      ll.forEach((seg) => L.polyline(seg, { color: surface, weight: 11, opacity: 0.95, interactive: false }).addTo(selectedLayer));
+      ll.forEach((seg) => L.polyline(seg, { color: css("--series-2"), weight: 6, opacity: 1, interactive: false }).addTo(selectedLayer));
+    } else {
+      ll.forEach((seg) => L.polyline(seg, { color: surface, weight: 8, opacity: 0.9, interactive: false }).addTo(selectedLayer));
+      // Merge consecutive pieces of the same band into one polyline.
+      const { pieces } = paceBands(id);
+      let run = null;
+      const flush = () => { if (run) L.polyline(run.pts, { color: css(`--seq-${run.band}`), weight: 4, opacity: 1, interactive: false }).addTo(selectedLayer); };
+      for (const p of pieces) {
+        if (run && run.band === p.band && run.last === p.a) { run.pts.push(p.b); run.last = p.b; }
+        else { flush(); run = { band: p.band, pts: [p.a, p.b], last: p.b }; }
+      }
+      flush();
     }
-    flush();
     const start = ll[0][0];
     L.circleMarker(start, { radius: 6, color: surface, weight: 2, fillColor: css("--series-2"), fillOpacity: 1 }).addTo(selectedLayer).bindTooltip("Start");
     if (zoom) map.fitBounds(L.latLngBounds(ll.flat()), { padding: [30, 30], maxZoom: 16 });
@@ -1458,6 +1464,14 @@
   const placeWalks = () => filtered().slice().sort((a, b) => b.day - a.day || (b.start || "").localeCompare(a.start || ""));
 
   /** Emphasize one route on the map while its list row is hovered. */
+  let detailHover = false;
+  function initDetailHover() {
+    const box = $("walk-detail");
+    const set = (on) => { if (detailHover === on) return; detailHover = on; if (state.selected != null) drawSelected(false); };
+    box.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") set(true); });
+    box.addEventListener("pointerleave", () => set(false));
+  }
+
   function previewRoute(id, on) {
     const line = routeLines.get(id);
     if (!line || state.selected != null) return;
@@ -1744,6 +1758,7 @@
   initCollapsible();
   $("reset-view").addEventListener("click", resetView);
   initMap();
+  initDetailHover();
   renderAll();
   function readHash() {
     const q = new URLSearchParams(location.hash.slice(1));
