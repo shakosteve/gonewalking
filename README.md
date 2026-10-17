@@ -92,6 +92,8 @@ The files in `docs/`:
   per-home map views), other milestones to mark on the time charts (`events`), and `myMapsId`
   to embed your Google My Map on the page.
 - `images/portrait.jpg`: header photo (a 320 px crop of the original).
+- `images/share.jpg`: the 1200×630 preview card shown when the site's link is shared on social
+  media (set by the `og:` tags in `index.html`). Remake it if the title or portrait changes.
 - `images/openmoji/`: illustrations from [OpenMoji](https://openmoji.org/), licensed
   [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/); the footer credits them, as
   the licence requires.
