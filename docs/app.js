@@ -453,10 +453,12 @@
         svg("text", { class: "axis-label", x: x(d), y: height - 6, "text-anchor": "middle" }, root).textContent = MONTHS[mo];
       }
     } else {
+      // Two-digit years ('17) when a year is too narrow for four digits, as on a phone.
+      const short = x(new Date(2001, 0, 1)) - x(new Date(2000, 0, 1)) < 40;
       for (let yr = list[0].year + 1; yr <= list[list.length - 1].year; yr++) {
         const xx = Math.round(x(new Date(yr, 0, 1))) + 0.5;
         svg("line", { class: "gridline", x1: xx, x2: xx, y1: m.top, y2: height - m.bottom }, root);
-        svg("text", { class: "axis-label", x: xx, y: height - 6, "text-anchor": "middle" }, root).textContent = yr;
+        svg("text", { class: "axis-label", x: xx, y: height - 6, "text-anchor": "middle" }, root).textContent = short ? `'${String(yr).slice(2)}` : yr;
       }
     }
 
@@ -900,10 +902,13 @@
     const daysInYear = (new Date(year + 1, 0, 1) - jan1) / 864e5;
     const weeks = Math.ceil((daysInYear + offset) / 7);
     const left = 30, top = 16;
-    const cell = Math.max(6, Math.min(16, Math.floor((width - left) / weeks) - 2));
+    // Days never shrink below 10 px; on a phone the year scrolls sideways instead.
+    const cell = Math.max(10, Math.min(16, Math.floor((width - left) / weeks) - 2));
     const gap = 2, pitch = cell + gap;
     const height = top + 7 * pitch + 4;
-    const root = svg("svg", { viewBox: `0 0 ${Math.max(width, left + weeks * pitch)} ${height}`, role: "img", "aria-label": `Calendar of ${year}` });
+    const full = Math.max(width, left + weeks * pitch);
+    const root = svg("svg", { viewBox: `0 0 ${full} ${height}`, role: "img", "aria-label": `Calendar of ${year}` });
+    if (full > width) root.style.width = `${full}px`;
     ["Mon", "Wed", "Fri"].forEach((d, i) => {
       svg("text", { class: "axis-label", x: 0, y: top + (i * 2) * pitch + cell - 1 }, root).textContent = d;
     });
@@ -933,13 +938,16 @@
         if (w) selectWalk(w.id, true);
       });
     }
-    chart.replaceChildren(root, el("div", { class: "legend" }, [
+    const scroller = el("div", { class: "cal-scroll" }, root);
+    chart.replaceChildren(scroller, el("div", { class: "legend" }, [
       el("span", { class: "legend-item" }, [el("span", { class: "key-cell", style: `background:${css("--cal-0")}` }), "None"]),
       el("span", { class: "legend-item" }, [el("span", { class: "key-cell", style: `background:${css("--cal-1")}` }), "Under 2 mi"]),
       el("span", { class: "legend-item" }, [el("span", { class: "key-cell", style: `background:${css("--cal-2")}` }), "2–4 mi"]),
       el("span", { class: "legend-item" }, [el("span", { class: "key-cell", style: `background:${css("--cal-3")}` }), "4–6 mi"]),
       el("span", { class: "legend-item" }, [el("span", { class: "key-cell", style: `background:${css("--cal-4")}` }), "6 mi and up"]),
     ]));
+    // When the year doesn't fit, start scrolled to the latest days.
+    if (full > width && year === today.getFullYear()) scroller.scrollLeft = left + Math.floor(((today - jan1) / 864e5 + offset) / 7) * pitch - width * 0.8;
   }
 
   const placeName = (w) => w.place || w.city || "Unknown";

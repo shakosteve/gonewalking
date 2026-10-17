@@ -635,3 +635,34 @@ code { font-size: 12px; background: var(--page); border: 1px solid var(--border)
   --cal-4: #f4b886;
   --tile-filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) sepia(0.35);
 }
+
+/* ---------- Phones and touch screens ----------
+   Last in the file so these win over the rules above. */
+@media (max-width: 600px) {
+  /* Pinned, the filters would fill most of a phone screen: let them scroll away, two to a row. */
+  .filters { position: static; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .filters .filter[hidden] { display: none; }
+  .filter select { width: 100%; min-width: 0; max-width: none; }
+  .filter-activity { grid-column: 1 / -1; }
+  .reset-button { justify-self: end; align-self: end; }
+  /* The map's extent buttons in two rows, clear of the zoom buttons. */
+  .map-view-toggle { display: grid; grid-template-columns: 1fr 1fr; }
+  .map-view-toggle button { font-size: 12px; padding: 4px 8px; white-space: nowrap; }
+  /* Two chapters: fit both homes on screen. */
+  .compare { font-size: 13px; }
+  .compare th, .compare td { padding: 6px 4px; }
+  .compare tbody th { white-space: normal; }
+}
+/* The calendar keeps readable days on narrow screens and scrolls sideways instead. */
+.cal-scroll { overflow-x: auto; }
+/* Bigger tap targets for fingers (phones and tablets); mice keep the compact sizes. */
+@media (pointer: coarse) {
+  .link-button { padding: 8px 0; }
+  .segmented button { padding: 8px 12px; }
+  .filter select { padding-top: 9px; padding-bottom: 9px; }
+  .card-select { padding: 6px 8px; }
+  .reset-button { padding: 9px 14px; }
+  .collapse-toggle { width: 36px; height: 36px; margin: -6px 0 -6px -10px; }
+  .log th button { padding: 8px 0; }
+  .walk-nav .step { padding-top: 8px; padding-bottom: 8px; }
+}
