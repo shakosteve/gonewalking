@@ -12,7 +12,7 @@ Chaska Ravine Trail,trail,44.81403,-93.58871,500,,3,2022-07-22 2022-10-10 2023-0
 Minnesota River Bluffs LRT Regional Trail,trail,44.82095,-93.52582,500,,3,2022-08-30 2024-05-22 2025-05-23,"Chanhassen, Minnesota","https://www.google.com/maps/search/?api=1&query=44.82095,-93.52582"
 Vierling Greenway,park,44.7822,-93.5172,500,,3,2022-09-14 2023-04-11 2024-04-30,"Shakopee, Minnesota","https://www.google.com/maps/search/?api=1&query=44.78220,-93.51720"
 Rice Marsh Lake Park,park,44.84914,-93.50997,500,,3,2023-05-17 2023-09-03 2024-07-14,"Eden Prairie, Minnesota","https://www.google.com/maps/search/?api=1&query=44.84914,-93.50997"
-Hazeltine Bluff Park,park,44.8117,-93.57221,500,,3,2023-09-04 2024-07-03 2024-09-27,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.81170,-93.57221"
+Chaska Trails,park,44.8117,-93.57221,500,,3,2023-09-04 2024-07-03 2024-09-27,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.81170,-93.57221"
 Carver Park Reserve,park,44.8716,-93.66156,500,,3,2023-09-16 2024-05-03 2026-07-03,"Victoria, Minnesota","https://www.google.com/maps/search/?api=1&query=44.87160,-93.66156"
 Murphy-Hanrehan Park Reserve,park,44.72449,-93.33931,500,,3,2023-11-06 2024-03-25 2024-09-05,"Savage, Minnesota","https://www.google.com/maps/search/?api=1&query=44.72449,-93.33931"
 Crosby Farm Regional Park,park,44.89744,-93.16798,500,,2,2017-05-13 2021-10-09,"Saint Paul, Minnesota","https://www.google.com/maps/search/?api=1&query=44.89744,-93.16798"
@@ -26,12 +26,12 @@ Carver Park Reserve,park,44.88368,-93.70329,500,,2,2023-07-29 2024-06-01,"Laketo
 Murphy-Hanrehan Park Reserve,park,44.70304,-93.34506,500,,2,2024-02-12 2024-08-02,"Credit River, Minnesota","https://www.google.com/maps/search/?api=1&query=44.70304,-93.34506"
 Clifton E. French Regional Park,park,45.02348,-93.43734,500,,2,2024-02-29 2024-10-05,"Plymouth, Minnesota","https://www.google.com/maps/search/?api=1&query=45.02348,-93.43734"
 Murphy-Hanrehan Park Reserve,park,44.69834,-93.33537,500,,2,2024-06-08 2026-10-05,"Credit River, Minnesota","https://www.google.com/maps/search/?api=1&query=44.69834,-93.33537"
-Bass Pond (Lanesboro),park,43.7202,-91.97863,500,,2,2025-06-19 2025-06-20,"Lanesboro, Minnesota","https://www.google.com/maps/search/?api=1&query=43.72020,-91.97863"
-Lake Grace Park,park,44.82681,-93.60478,500,,2,2026-06-21 2026-07-05,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.82681,-93.60478"
+Lanesboro,park,43.7202,-91.97863,500,,2,2025-06-19 2025-06-20,"Lanesboro, Minnesota","https://www.google.com/maps/search/?api=1&query=43.72020,-91.97863"
+Chaska Trails,park,44.82681,-93.60478,500,,2,2026-06-21 2026-07-05,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.82681,-93.60478"
 East River Flats Park,park,44.97045,-93.23386,500,,1,2018-08-11,"Minneapolis, Minnesota","https://www.google.com/maps/search/?api=1&query=44.97045,-93.23386"
 Gateway State Trail,trail,45.02679,-92.96506,500,,1,2019-06-30,"Pine Springs, Minnesota","https://www.google.com/maps/search/?api=1&query=45.02679,-92.96506"
 Loring Greenway,trail,44.97151,-93.27739,500,,1,2019-07-06,"Minneapolis, Minnesota","https://www.google.com/maps/search/?api=1&query=44.97151,-93.27739"
-Bass Ponds Trail (Bloomington),trail,44.85147,-93.23315,500,,1,2021-07-03,"Bloomington, Minnesota","https://www.google.com/maps/search/?api=1&query=44.85147,-93.23315"
+Long Meadow Lake Unit · Bass Ponds Trail,trail,44.85147,-93.23315,500,,1,2021-07-03,"Bloomington, Minnesota","https://www.google.com/maps/search/?api=1&query=44.85147,-93.23315"
 Lake Rebecca Park Reserve,park,45.06796,-93.75215,500,,1,2021-07-04,"Greenfield, Minnesota","https://www.google.com/maps/search/?api=1&query=45.06796,-93.75215"
 Crosby Farm Regional Park,park,44.90923,-93.14211,500,,1,2021-07-17,"Saint Paul, Minnesota","https://www.google.com/maps/search/?api=1&query=44.90923,-93.14211"
 Elm Creek Park Reserve,park,45.14656,-93.43711,500,,1,2021-09-04,"Maple Grove, Minnesota","https://www.google.com/maps/search/?api=1&query=45.14656,-93.43711"
@@ -39,20 +39,20 @@ Elm Creek Park Reserve,park,45.17065,-93.42244,500,,1,2021-09-06,"Dayton, Minnes
 Westminster Park,park,44.76901,-93.51096,500,,1,2022-05-07,"Shakopee, Minnesota","https://www.google.com/maps/search/?api=1&query=44.76901,-93.51096"
 Beverly Gardens Water Fountain,park,34.07493,-118.39943,500,,1,2022-05-24,"Beverly Hills, California","https://www.google.com/maps/search/?api=1&query=34.07493,-118.39943"
 Minnesota River Bluffs LRT Regional Trail,trail,44.80935,-93.53713,500,,1,2022-06-03,"Chanhassen, Minnesota","https://www.google.com/maps/search/?api=1&query=44.80935,-93.53713"
-Minnesota Valley refuge (Wilkie Unit),park,44.79449,-93.41723,500,,1,2022-06-22,"Shakopee, Minnesota","https://www.google.com/maps/search/?api=1&query=44.79449,-93.41723"
+Minnesota Valley National Wildlife Refuge,park,44.79449,-93.41723,500,,1,2022-06-22,"Shakopee, Minnesota","https://www.google.com/maps/search/?api=1&query=44.79449,-93.41723"
 Carver Levee Trail,trail,44.77713,-93.61558,500,,1,2022-06-26,"Carver, Minnesota","https://www.google.com/maps/search/?api=1&query=44.77713,-93.61558"
-Lions Park,park,44.79488,-93.5944,500,,1,2022-07-01,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.79488,-93.59440"
+Chaska Trails,park,44.79488,-93.5944,500,,1,2022-07-01,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.79488,-93.59440"
 River's Edge Trail,trail,44.79684,-93.39339,500,,1,2022-07-04,"Bloomington, Minnesota","https://www.google.com/maps/search/?api=1&query=44.79684,-93.39339"
 Minnesota Valley National Wildlife Refuge,park,44.72131,-93.63012,500,,1,2022-07-07,"San Francisco Township, Minnesota","https://www.google.com/maps/search/?api=1&query=44.72131,-93.63012"
 Vierling Greenway,park,44.77658,-93.52038,500,,1,2022-07-21,"Shakopee, Minnesota","https://www.google.com/maps/search/?api=1&query=44.77658,-93.52038"
 Levy Trail,trail,44.75787,-93.62603,500,,1,2022-08-03,"Carver, Minnesota","https://www.google.com/maps/search/?api=1&query=44.75787,-93.62603"
 Pike Lake Park,park,44.75232,-93.43506,500,,1,2022-08-23,"Prior Lake, Minnesota","https://www.google.com/maps/search/?api=1&query=44.75232,-93.43506"
-McKnight Park,park,44.8451,-93.60438,500,,1,2022-08-28,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.84510,-93.60438"
+Chaska Trails,park,44.8451,-93.60438,500,,1,2022-08-28,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.84510,-93.60438"
 Carver Park Reserve,park,44.8787,-93.67214,500,,1,2022-09-02,"Victoria, Minnesota","https://www.google.com/maps/search/?api=1&query=44.87870,-93.67214"
 Rice Marsh Lake Park,park,44.85104,-93.53201,500,,1,2022-10-22,"Chanhassen, Minnesota","https://www.google.com/maps/search/?api=1&query=44.85104,-93.53201"
 Carver Park Reserve,park,44.87728,-93.69574,500,,1,2023-06-03,"Laketown Township, Minnesota","https://www.google.com/maps/search/?api=1&query=44.87728,-93.69574"
 Lake Minnetonka Regional Park,park,44.89701,-93.67576,500,,1,2023-06-17,"Minnetrista, Minnesota","https://www.google.com/maps/search/?api=1&query=44.89701,-93.67576"
-Chaska Jonathan Trails,park,44.82781,-93.61708,500,,1,2023-07-02,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.82781,-93.61708"
+Chaska Trails,park,44.82781,-93.61708,500,,1,2023-07-02,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.82781,-93.61708"
 Lake Minnetonka LRT Regional Trail,trail,44.86825,-93.6478,500,,1,2023-07-09,"Victoria, Minnesota","https://www.google.com/maps/search/?api=1&query=44.86825,-93.64780"
 Dr Paul Dudley White Bike Path,trail,42.35767,-71.11548,500,,1,2023-08-11,"Boston, Massachusetts","https://www.google.com/maps/search/?api=1&query=42.35767,-71.11548"
 Carver Park Reserve,park,44.87216,-93.65299,500,,1,2023-08-17,"Victoria, Minnesota","https://www.google.com/maps/search/?api=1&query=44.87216,-93.65299"
@@ -82,7 +82,7 @@ Minnehaha Creek Greenway,park,44.93007,-93.36771,500,,1,2026-05-13,"Saint Louis 
 East River Trail,trail,44.44425,-93.18359,500,,1,2026-05-23,"Northfield, Minnesota","https://www.google.com/maps/search/?api=1&query=44.44425,-93.18359"
 Chaska Ravine Trail,trail,44.81441,-93.59561,500,,1,2026-07-10,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.81441,-93.59561"
 Deans Lake Trail,trail,44.77688,-93.45897,500,,1,2026-08-11,"Shakopee, Minnesota","https://www.google.com/maps/search/?api=1&query=44.77688,-93.45897"
-McKnight Park,park,,,,6852520696,1,,,
+Chaska Trails,park,,,,6852520696,1,,,
 Minnesota River Bluffs LRT Regional Trail,trail,,,,7938083215,1,,,
 Mexico City,park,,,,8396754271,1,,,
 Minnesota River Bluffs LRT Regional Trail,trail,,,,8672585540,1,,,
@@ -90,3 +90,51 @@ Fort Snelling State Park,park,,,,4446361618,1,,,
 Fort Snelling State Park,park,,,,5824877368,1,,,
 Downtown Minneapolis,park,,,,3133546084,1,2018-09-08,"Minneapolis, Minnesota",
 Downtown Minneapolis,park,,,,3735724402,1,2019-08-17,"Minneapolis, Minnesota",
+Whitetail Woods Regional Park,park,44.6883,-93.0846,800,,3,2023-05-28 2026-05-16 2026-06-19,"Empire, Minnesota","https://www.google.com/maps/search/?api=1&query=44.68830,-93.08460"
+Minnesota Valley State Trail,park,,,,6595771729,1,2022-05-22,,
+Lake Minnetonka LRT Regional Trail,park,,,,7385473717,1,2023-07-09,,
+Vermillion River Greenway,park,,,,7493881651,1,2023-09-01,,
+Goodhue Pioneer State Trail,park,,,,8111635069,1,2024-08-17,,
+Kaplans Woods Parkway,park,,,,8598859258,1,2025-05-31,,
+Goodhue Pioneer State Trail,park,,,,8644542490,1,2025-08-02,,
+Minnesota Valley National Wildlife Refuge,park,44.85147,-93.23315,500,,1,2021-07-03,"Bloomington, Minnesota","https://www.google.com/maps/search/?api=1&query=44.85147,-93.23315"
+Louisville Swamp Unit · Mazomani Trail,trail,,,,8833277356,1,2026-07-11,,
+Rapids Lake Unit · Forest Loop Trail,trail,,,,6697224355,1,2022-07-07,,
+Long Meadow Lake Unit · Minnesota River Bottoms Singletrack Trail,trail,,,,1851175061,1,2016-11-05,,
+Long Meadow Lake Unit · Bass Ponds Trail,trail,,,,5903069884,1,2021-07-03,,
+Louisville Swamp Unit · Mazomani Trail,trail,,,,6610764598,1,2022-05-29,,
+Wilkie Unit · River's Edge Trail,trail,,,,6691203694,1,2022-07-04,,
+Louisville Swamp Unit · Mazomani Trail,trail,,,,6751154803,1,2022-08-01,,
+Wilkie Unit · Blue Lake Trail,trail,,,,6773754031,1,2022-08-11,,
+Long Meadow Lake Unit · Hogback Ridge Trail,trail,,,,7525963510,1,2023-09-17,,
+Louisville Swamp Unit · Mazomani Trail,trail,,,,8794715828,1,2026-05-08,,
+Louisville Swamp Unit · Mazomani Trail,trail,,,,8798906696,1,2026-05-15,,
+Louisville Swamp Unit · Minnesota Valley State Trail,trail,,,,8804129932,1,2026-05-24,,
+Louisville Swamp Unit · Mazomani Trail,trail,,,,8807428974,1,2026-05-29,,
+Louisville Swamp Unit · Mazomani Trail,trail,,,,8818002483,1,2026-06-15,,
+Louisville Swamp Unit · Mazomani Trail,trail,,,,8823552031,1,2026-06-24,,
+Louisville Swamp Unit · Minnesota Valley State Trail,trail,,,,8841238770,1,2026-07-24,,
+Louisville Swamp Unit · Mazomani Trail,trail,,,,8852734006,1,2026-08-12,,
+Louisville Swamp Unit · Mazomani Trail,trail,,,,8857115356,1,2026-08-18,,
+Louisville Swamp Unit · Mazomani Trail,trail,,,,8884966150,1,2026-10-07,,
+Minnesota Valley State Trail - Lawrence Unit,trail,,,,6701612338,1,2022-07-09,,
+Minnesota Valley State Trail - Lawrence Unit,trail,,,,8640237403,1,2025-07-26,,
+Wilkie Unit · Minnesota Valley State Trail / Blue Lake Trail,trail,,,,6665100001,1,2022-06-22,,
+Chaska Trails,park,,,,6684858280,1,2022-07-01,"Chaska, Minnesota",
+Minnesota River Bluffs LRT Regional Trail / Levee Trail / East Chaska Creek Trail,trail,,,,6684858280,1,2022-07-01,"Chaska, Minnesota",
+Chaska Trails,park,,,,7211101270,1,2023-04-13,"Chaska, Minnesota",
+Minnesota River Bluffs LRT Regional Trail / Levee Trail / East Chaska Creek Trail,trail,,,,7211101270,1,2023-04-13,"Chaska, Minnesota",
+Chaska Trails,park,,,,8639748532,1,2025-07-25,"Chaska, Minnesota",
+East Chaska Creek Trail,trail,,,,8639748532,1,2025-07-25,"Chaska, Minnesota",
+Root River State Trail / Bass Pond,trail,43.7202,-91.97863,500,,2,2025-06-19 2025-06-20,"Lanesboro, Minnesota","https://www.google.com/maps/search/?api=1&query=43.72020,-91.97863"
+Root River State Trail / Bass Pond / Sylvan Park,trail,,,,8617675948,1,2025-06-20,"Lanesboro, Minnesota",
+Chaska Trails,park,44.81403,-93.58871,500,,3,2022-07-22 2022-10-10 2023-06-09,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.81403,-93.58871"
+Chaska Trails,park,44.81441,-93.59561,500,,1,2026-07-10,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.81441,-93.59561"
+Minnesota River Bluffs LRT Regional Trail / East Creek Falls Park / Chaska Ravine Trail / Hazeltine Bluff Park,trail,,,,7499944447,1,2023-09-04,"Chaska, Minnesota",
+Lake Jonathan Park / McKnight Park / Spring Peeper Meadow,trail,,,,6810159730,1,2022-08-28,"Chaska, Minnesota",
+Lake Jonathan Park / McKnight Park,trail,,,,6852520696,1,2022-09-17,"Chaska, Minnesota",
+Jonathan Trails / McKnight Park / Chaska Community Park,trail,,,,7371773623,1,2023-07-02,"Chaska, Minnesota",
+Lake Grace Park / McKnight Park / Cortina Woods Park,trail,,,,8821508278,1,2026-06-21,"Chaska, Minnesota",
+Lake Grace Park / Cortina Woods Park / McKnight Park,trail,,,,8829710409,1,2026-07-05,"Chaska, Minnesota",
+Dakota Rail Regional Trail,trail,,,,7297136467,1,2023-05-26,,
+Gale Woods Farm,trail,,,,7309562809,1,2023-06-01,,

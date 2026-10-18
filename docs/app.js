@@ -49,7 +49,7 @@
   ].sort((a, b) => a.date - b.date);
   const today = new Date();
 
-  const defaultState = () => ({ year: "all", activity: "Walk", place: "all", home: "all", region: "all", selected: null, sort: { key: "date", dir: -1 }, showAll: false, calYear: null, photosOnly: false });
+  const defaultState = () => ({ year: "all", activity: "Walk", place: "all", home: "all", region: "all", selected: null, sort: { key: "date", dir: -1 }, showAll: false, calYear: null, photosOnly: false, threeRiversOnly: false });
   const state = defaultState();
 
   // Regions, nearest to farthest; each keeps a fixed color slot so filtering never repaints them.
@@ -98,6 +98,9 @@
   const activityInfo = () => ACTIVITIES.find((a) => a.key === state.activity);
 
   /** Workouts matching the filters. opts.anyPlace ignores the place filter (for place-comparison charts). */
+  // Three Rivers Park District places are the ones whose web link is on its website.
+  const isThreeRivers = (w) => /(^|\.)threeriversparks\.org\//.test((w.url || "").replace(/^https?:\/\//, ""));
+
   function filtered(year = state.year, opts = {}) {
     return workouts.filter((w) =>
       (state.activity === "all" || w.activity === state.activity) &&
@@ -106,6 +109,7 @@
       (opts.anyHome || state.home === "all" || w.home === state.home) &&
       (opts.anyRegion || state.region === "all" || regionOf(w) === state.region) &&
       (!state.photosOnly || (PHOTOS[w.id] && PHOTOS[w.id].length)) &&
+      (!state.threeRiversOnly || isThreeRivers(w)) &&
       (!opts.until || w.day <= opts.until));
   }
 
@@ -286,6 +290,11 @@
     const photosBox = $("filter-photos");
     photosBox.checked = state.photosOnly;
     photosBox.onchange = () => { state.photosOnly = photosBox.checked; state.selected = null; state.showAll = false; renderAll(); };
+
+    $("filter-trpd-wrap").hidden = !workouts.some(isThreeRivers);
+    const trpdBox = $("filter-trpd");
+    trpdBox.checked = state.threeRiversOnly;
+    trpdBox.onchange = () => { state.threeRiversOnly = trpdBox.checked; state.selected = null; state.showAll = false; renderAll(); };
   }
 
   function setPlace(place) {

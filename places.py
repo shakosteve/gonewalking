@@ -59,10 +59,12 @@ def region_of(place):
         return REGIONS[2]
     return REGIONS[0] if place.get("county") in METRO_COUNTIES else REGIONS[1]
 
-PARK_QUERY = """[out:json][timeout:90][bbox:{s},{w},{n},{e}];
-(way[leisure~"^(park|nature_reserve)$"][name]; relation[leisure~"^(park|nature_reserve)$"][name];
- way[boundary~"^(protected_area|national_park)$"][name]; relation[boundary~"^(protected_area|national_park)$"][name];);
-out tags geom;"""
+# "out geom" (not "out tags geom", which drops a relation's member list) so that parks mapped as
+# several pieces (multipolygon relations) come with the ways that make up their outline.
+PARK_QUERY = """[out:json][timeout:90];
+(way[leisure~"^(park|nature_reserve)$"][name]({s},{w},{n},{e}); relation[leisure~"^(park|nature_reserve)$"][name]({s},{w},{n},{e});
+ way[boundary~"^(protected_area|national_park)$"][name]({s},{w},{n},{e}); relation[boundary~"^(protected_area|national_park)$"][name]({s},{w},{n},{e}););
+out geom;"""
 
 
 def distance_m(a, b):
