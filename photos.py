@@ -5,7 +5,7 @@ certainty score, from how close it was to the track at the time, whether it was 
 how its time and location were recorded, and (once checked) what the photo shows:
 
   PUBLISH_AT and up     published on the walk's album
-  REVIEW_AT and up      held for your review (data/photo_review.html), not published
+  REVIEW_AT and up      held for your review, not published
   below                 left off
 
 Time and location come from the photo's EXIF, or from the .json file Google Takeout puts beside
@@ -28,7 +28,8 @@ Outputs:
   docs/photos/{workout_id}/{name}.jpg and {name}_t.jpg   web copy and thumbnail, EXIF removed
   docs/data/photos.js          the published albums (window.GW_PHOTOS)
   data/photo_matches.csv       every photo looked at: score, status and why
-  data/photo_review.html       flagged and published photos, with Approve/Reject (not published)
+  data/photo_review.html       with --review: flagged and published photos, with Approve/Reject (not published)
+  data/photo_thumbs/           small copies of candidate photos, for spotting near-duplicates
   data/photo_cache.json        what each photo file says, so later runs don't read it again
 """
 
@@ -354,9 +355,9 @@ def fresh(dest, src):
     return dest.exists() and dest.stat().st_mtime >= src.stat().st_mtime
 
 
-def make_sheets(rows, review_dir):
+def make_sheets(rows, data_dir):
     """Contact sheets of candidate photos whose content hasn't been checked, 20 to a sheet."""
-    sheet_dir = review_dir / "sheets"
+    sheet_dir = data_dir / "photo_sheets"
     if sheet_dir.exists():
         shutil.rmtree(sheet_dir)
     todo = [r for r in rows if r["thumb"] and not r["content"] and r["status"] in ("review", "published")]
@@ -398,7 +399,7 @@ def write_review_page(rows, overrides, keeps, out_path):
     out_path.write_text(page, encoding="utf-8")
 
 
-def update_photos(sources, tracks_dir, data_dir, site_dir, overrides_path, content_path, sheets=False):
+def update_photos(sources, tracks_dir, data_dir, site_dir, overrides_path, content_path, sheets=False, review=False):
     data_dir, site_dir = Path(data_dir), Path(site_dir)
     walks = load_walks(tracks_dir)
     by_id = {w["id"]: w for w in walks}
@@ -414,7 +415,7 @@ def update_photos(sources, tracks_dir, data_dir, site_dir, overrides_path, conte
     save_cache()
     print("Matching to walks and making copies...", flush=True)
 
-    photo_dir, review_dir = site_dir / "photos", data_dir / "photo_review"
+    photo_dir, thumb_dir = site_dir / "photos", data_dir / "photo_thumbs"
     published_path = data_dir / "photo_published.json"
     earlier = json.loads(published_path.read_text(encoding="utf-8")) if published_path.exists() else {}
     albums, rows, keep, keep_review, candidates, chosen = {}, [], set(), set(), 0, []
@@ -456,11 +457,11 @@ def update_photos(sources, tracks_dir, data_dir, site_dir, overrides_path, conte
 
         # A small copy for the review page and contact sheets, for every candidate.
         if walk and status != "skipped":
-            thumb = review_dir / "thumbs" / f"{photo['key']}.jpg"
+            thumb = thumb_dir / f"{photo['key']}.jpg"
             if not fresh(thumb, photo["path"]):
                 web_copy(photo["path"], thumb, REVIEW_PX)
             keep_review.add(thumb)
-            row["thumb"], row["thumb_rel"] = thumb, f"photo_review/thumbs/{thumb.name}"
+            row["thumb"], row["thumb_rel"] = thumb, f"photo_thumbs/{thumb.name}"
 
         if status == "published":
             chosen.append({"row": row, "photo": photo, "walk": walk, "at": at, "taken_local": taken_local})
@@ -540,7 +541,7 @@ def update_photos(sources, tracks_dir, data_dir, site_dir, overrides_path, conte
     for album in albums.values():
         album.sort(key=lambda p: (p["t"] is None, p["t"] or 0, p["f"]))
     # Remove published copies (and review thumbnails) of photos that no longer qualify.
-    for folder, wanted in ((photo_dir, keep), (review_dir / "thumbs", keep_review)):
+    for folder, wanted in ((photo_dir, keep), (thumb_dir, keep_review)):
         if folder.exists():
             for f in folder.rglob("*.jpg"):
                 if f not in wanted:
@@ -560,8 +561,12 @@ def update_photos(sources, tracks_dir, data_dir, site_dir, overrides_path, conte
         writer = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore")
         writer.writeheader()
         writer.writerows(rows)
-    write_review_page(rows, overrides, keeps, data_dir / "photo_review.html")
-    unchecked = make_sheets(rows, review_dir) if sheets else 0
+    review_page = data_dir / "photo_review.html"
+    if review:
+        write_review_page(rows, overrides, keeps, review_page)
+    elif review_page.exists():
+        review_page.unlink()
+    unchecked = make_sheets(rows, data_dir) if sheets else 0
 
     count = lambda s: sum(r["status"] == s for r in rows)
     published = sum(len(a) for a in albums.values())
@@ -575,9 +580,9 @@ def update_photos(sources, tracks_dir, data_dir, site_dir, overrides_path, conte
     for why, n in sorted(skipped.items(), key=lambda kv: -kv[1]):
         print(f"  {n:>6}  skipped: {why}")
     if count("review") or dupes:
-        print(f"Review them: {data_dir / 'photo_review.html'}")
+        print(f"Review them: {review_page}" if review else "Review them: python gonewalking.py photos --review")
     if sheets:
-        print(f"Contact sheets: {unchecked} photos not yet checked -> {review_dir / 'sheets'}")
+        print(f"Contact sheets: {unchecked} photos not yet checked -> {data_dir / 'photo_sheets'}")
     return albums
 
 

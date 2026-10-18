@@ -103,7 +103,8 @@ the command line. Albums build up over time: photos published by earlier runs st
 them. A new photo nearly identical to one already published is set aside as a near-duplicate.
 Run `photos` after `sync` to pick up photos from new walks.
 
-**Reviewing.** Open `data/photo_review.html` in a browser (it is never published). It shows the
+**Reviewing.** `python gonewalking.py photos --review` also writes `data/photo_review.html`; open it
+in a browser (it is never published, and the next run without `--review` removes it). It shows the
 photos to review, and the published ones, with their score, the reasons, and links to the map, the
 walk and the original file. Approve or reject each, then **Download photo_overrides.csv**, save it
 in this folder (replacing the old one) and run `photos` again. `photo_overrides.csv`
@@ -113,7 +114,7 @@ blank one keeps it off the site. These decisions win over the score.
 **What a photo shows.** `photo_content.csv` (`file,content`) records whether each candidate photo
 is `outdoor`, `indoor`, `vehicle`, `screen` (a screenshot or document) or `unclear`. PNGs and
 screenshots are marked `screen` automatically. `photos --sheets` makes numbered contact sheets of
-the candidates not yet checked (`data/photo_review/sheets/`, with `index.json` saying which photo
+the candidates not yet checked (`data/photo_sheets/`, with `index.json` saying which photo
 is which), for filling this in, by eye or by asking Claude to look at them.
 
 It writes:
@@ -122,7 +123,8 @@ It writes:
   Their EXIF is removed, so the published files carry no location, camera or time details.
 - `docs/data/photos.js`: which photos each walk has, when and where on the route.
 - `data/photo_matches.csv`: every photo looked at, with its status, score and why.
-- `data/photo_review.html` and `data/photo_review/`: the review page and its thumbnails.
+- `data/photo_review.html` (with `--review`) and `data/photo_thumbs/`: the review page, and small
+  copies of candidate photos used for it and for spotting near-duplicates.
 
 Published photos count toward GitHub Pages' 1 GB site limit: each one takes about 250 KB.
 

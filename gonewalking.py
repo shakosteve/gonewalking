@@ -226,6 +226,7 @@ def main():
     photos_cmd = sub.add_parser("photos", help="match your photos to walks and publish them as albums")
     photos_cmd.add_argument("folders", nargs="*", help="photo folders or files (default: PHOTOS_DIR in .env)")
     photos_cmd.add_argument("--sheets", action="store_true", help="also make contact sheets of photos whose content isn't checked yet")
+    photos_cmd.add_argument("--review", action="store_true", help="also write data/photo_review.html, to approve or reject photos")
     args = parser.parse_args()
 
     if args.command == "process":
@@ -243,7 +244,7 @@ def main():
         missing = [f for f in folders if not Path(f).exists()]
         if missing:
             sys.exit(f"Not found: {', '.join(missing)}")
-        photos.update_photos(folders, TRACKS_DIR, DATA_DIR, SITE_DIR, PHOTO_OVERRIDES, PHOTO_CONTENT, sheets=args.sheets)
+        photos.update_photos(folders, TRACKS_DIR, DATA_DIR, SITE_DIR, PHOTO_OVERRIDES, PHOTO_CONTENT, sheets=args.sheets, review=args.review)
         return
 
     load_env()
