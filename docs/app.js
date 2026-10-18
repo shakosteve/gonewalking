@@ -267,10 +267,11 @@
     for (const w of filtered(state.year, { anyPlace: true })) counts.set(placeName(w), (counts.get(placeName(w)) || 0) + 1);
     if (state.place !== "all" && !counts.has(state.place)) counts.set(state.place, 0);
     const placeSelect = $("filter-place");
+    const withPhotos = new Set(workouts.filter((w) => PHOTOS[w.id] && PHOTOS[w.id].length).map(placeName));
     placeSelect.replaceChildren(
       el("option", { value: "all", text: "All places" }),
       ...[...counts.entries()].sort((a, b) => a[0].localeCompare(b[0], "en", { sensitivity: "base", numeric: true }))
-        .map(([name, n]) => el("option", { value: name, text: `${name} (${n})` })));
+        .map(([name, n]) => el("option", { value: name, text: `${name}${withPhotos.has(name) ? " 📷" : ""} (${n})` })));
     placeSelect.value = state.place;
     placeSelect.onchange = () => setPlace(placeSelect.value);
 
