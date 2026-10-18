@@ -268,7 +268,16 @@ def write_site_data(rows, track_features, kml_dir, site_data_dir):
             "place": r["place"], "detail": r["place_detail"], "url": r["place_url"], "city": r["city"], "county": r["county"],
             "state": r["state"], "country": r["country"], "region": r["region"],
         })
+    # Names of Three Rivers Park District places and trails (their link is on its website), so the
+    # dashboard can find walks whose route passes through one even when it isn't the walk's place.
+    links = Path(site_data_dir).parent.parent / "place_links.csv"
+    three_rivers = set()
+    if links.exists():
+        with open(links, newline="", encoding="utf-8") as f:
+            three_rivers = {r["name"] for r in csv.DictReader(f) if "threeriversparks.org/" in (r.get("url") or "")}
+    three_rivers |= {r["place"] for r in rows if "threeriversparks.org/" in (r["place_url"] or "")}
     meta = {"updated": datetime.now(LOCAL_TZ).isoformat(timespec="minutes"),
+            "three_rivers": sorted(n for n in three_rivers if n),
             "kml_years": sorted({r["year"] for r in rows if r["has_track"]}, reverse=True),
             "regions": places.REGIONS}
     write_js(site_data_dir / "workouts.js", "GW_DATA", {"meta": meta, "workouts": workouts})

@@ -98,8 +98,12 @@
   const activityInfo = () => ACTIVITIES.find((a) => a.key === state.activity);
 
   /** Workouts matching the filters. opts.anyPlace ignores the place filter (for place-comparison charts). */
-  // Three Rivers Park District places are the ones whose web link is on its website.
-  const isThreeRivers = (w) => /(^|\.)threeriversparks\.org\//.test((w.url || "").replace(/^https?:\/\//, ""));
+  // Three Rivers Park District places are the ones whose web link is on its website. A walk counts
+  // when its place is one, or when its route (the detail) names one, e.g. "Cedar Lake Regional Trail".
+  const threeRiversUrl = (w) => /(^|\.)threeriversparks\.org\//.test((w.url || "").replace(/^https?:\/\//, ""));
+  const THREE_RIVERS = new Set([...(DATA.meta.three_rivers || []), ...workouts.filter(threeRiversUrl).map((w) => w.place)]);
+  const isThreeRivers = (w) => threeRiversUrl(w) ||
+    (w.detail || "").split(/ \/ | · /).some((part) => THREE_RIVERS.has(part.trim()));
 
   function filtered(year = state.year, opts = {}) {
     return workouts.filter((w) =>

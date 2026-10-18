@@ -1,11 +1,11 @@
 name,kind,lat,lon,radius_m,workout_id,walks,dates,city,google_maps
 Murphy-Hanrehan Park Reserve,park,44.69843,-93.32821,500,,14,2022-09-11 2024-04-13 2024-07-05 2024-08-12 2024-08-30 2024-09-20 2025-02-28 2025-04-12 2025-05-30 2025-06-29 2025-07-08 2025-07-20 2025-10-06 2026-04-18,"Credit River, Minnesota","https://www.google.com/maps/search/?api=1&query=44.69843,-93.32821"
-Nicollet Island,park,44.98713,-93.2644,500,,8,2017-07-23 2019-07-27 2020-06-06 2020-07-05 2020-07-18 2020-08-29 2020-09-26 2021-05-22,"Minneapolis, Minnesota","https://www.google.com/maps/search/?api=1&query=44.98713,-93.26440"
-Bohemian Flats Park,park,44.97628,-93.24411,500,,7,2018-07-28 2018-09-15 2019-06-08 2019-07-07 2019-07-14 2020-06-07 2021-05-29,"Minneapolis, Minnesota","https://www.google.com/maps/search/?api=1&query=44.97628,-93.24411"
-Water Works Park,park,44.98144,-93.26139,500,,5,2018-06-24 2019-09-02 2020-05-23 2020-07-25 2021-05-31,"Minneapolis, Minnesota","https://www.google.com/maps/search/?api=1&query=44.98144,-93.26139"
+Minneapolis Trails,park,44.98713,-93.2644,500,,8,2017-07-23 2019-07-27 2020-06-06 2020-07-05 2020-07-18 2020-08-29 2020-09-26 2021-05-22,"Minneapolis, Minnesota","https://www.google.com/maps/search/?api=1&query=44.98713,-93.26440"
+Minneapolis Trails,park,44.97628,-93.24411,500,,7,2018-07-28 2018-09-15 2019-06-08 2019-07-07 2019-07-14 2020-06-07 2021-05-29,"Minneapolis, Minnesota","https://www.google.com/maps/search/?api=1&query=44.97628,-93.24411"
+Minneapolis Trails,park,44.98144,-93.26139,500,,5,2018-06-24 2019-09-02 2020-05-23 2020-07-25 2021-05-31,"Minneapolis, Minnesota","https://www.google.com/maps/search/?api=1&query=44.98144,-93.26139"
 Cedar Lake Regional Trail,trail,44.96997,-93.30181,500,,4,2016-09-10 2017-06-10 2021-06-18 2021-07-24,"Minneapolis, Minnesota","https://www.google.com/maps/search/?api=1&query=44.96997,-93.30181"
 Loring Park,park,44.97142,-93.28518,500,,4,2019-06-29 2019-08-03 2020-05-24 2020-06-14,"Minneapolis, Minnesota","https://www.google.com/maps/search/?api=1&query=44.97142,-93.28518"
-Gold Medal Park,park,44.97795,-93.25168,500,,4,2020-05-03 2020-06-13 2020-07-04 2021-07-02,"Minneapolis, Minnesota","https://www.google.com/maps/search/?api=1&query=44.97795,-93.25168"
+Minneapolis Trails,park,44.97795,-93.25168,500,,4,2020-05-03 2020-06-13 2020-07-04 2021-07-02,"Minneapolis, Minnesota","https://www.google.com/maps/search/?api=1&query=44.97795,-93.25168"
 Murphy-Hanrehan Park Reserve,park,44.70389,-93.33077,500,,4,2023-08-04 2024-07-26 2025-03-03 2025-08-27,"Credit River, Minnesota","https://www.google.com/maps/search/?api=1&query=44.70389,-93.33077"
 Hidden Falls Regional Park,park,44.90262,-93.19002,500,,3,2017-04-22 2020-07-12 2021-07-10,"Saint Paul, Minnesota","https://www.google.com/maps/search/?api=1&query=44.90262,-93.19002"
 Chaska Ravine Trail,trail,44.81403,-93.58871,500,,3,2022-07-22 2022-10-10 2023-06-09,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.81403,-93.58871"
@@ -138,3 +138,68 @@ Lake Grace Park / McKnight Park / Cortina Woods Park,trail,,,,8821508278,1,2026-
 Lake Grace Park / Cortina Woods Park / McKnight Park,trail,,,,8829710409,1,2026-07-05,"Chaska, Minnesota",
 Dakota Rail Regional Trail,trail,,,,7297136467,1,2023-05-26,,
 Gale Woods Farm,trail,,,,7309562809,1,2023-06-01,,
+Park Nicollet Boardwalk / Creekside Park,trail,,,,8797740069,1,2026-05-13,,
+Minneapolis Trails,park,,,,3001874974,1,2018-07-07,"Minneapolis, Minnesota",
+Loring Greenway / Loring Park / Parade Park / Kenilworth Trail / Lake of the Isles,trail,,,,3001874974,1,2018-07-07,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,5958031678,1,2021-07-24,"Minneapolis, Minnesota",
+Loring Greenway / Loring Park / Parade Park / Cedar Lake Regional Trail / Lake of the Isles,trail,,,,5958031678,1,2021-07-24,"Minneapolis, Minnesota",
+Bryn Mawr Meadows,trail,,,,4403219497,1,2020-06-14,"Minneapolis, Minnesota",
+Bryn Mawr Meadows,trail,,,,4591184599,1,2020-08-15,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,1739021945,1,2016-09-10,"Minneapolis, Minnesota",
+Loring Park / Parade Park / Cedar Lake Regional Trail / Cedar Lake Park,trail,,,,1739021945,1,2016-09-10,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,2253727853,1,2017-06-10,"Minneapolis, Minnesota",
+Loring Park / Parade Park / Bryn Mawr Meadows / Bassett's Creek Park / Theodore Wirth Park / Brownie Lake / Cedar Lake Regional Trail / Cedar Lake Park,trail,,,,2253727853,1,2017-06-10,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,4649763367,1,2020-09-05,"Minneapolis, Minnesota",
+Loring Park / Parade Park / Bryn Mawr Meadows / Bassett's Creek Park / Theodore Wirth Park / Cedar Lake Regional Trail,trail,,,,4649763367,1,2020-09-05,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,5862528595,1,2021-06-18,"Minneapolis, Minnesota",
+Loring Park / Parade Park / Cedar Lake Regional Trail / Cedar Lake Park / Brownie Lake / Theodore Wirth Park / Bassett's Creek Park / Bryn Mawr Meadows,trail,,,,5862528595,1,2021-06-18,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,2349852566,1,2017-07-23,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Nicollet Island / Boom Island Park,trail,,,,2349852566,1,2017-07-23,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,3046603738,1,2018-07-28,"Minneapolis, Minnesota",
+Mill Ruins Park / Gold Medal Park / Dinkytown Greenway,trail,,,,3046603738,1,2018-07-28,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,3147878593,1,2018-09-15,"Minneapolis, Minnesota",
+Mill Ruins Park / Gold Medal Park / Dinkytown Greenway / Stone Arch Bridge,trail,,,,3147878593,1,2018-09-15,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,3593692972,1,2019-06-08,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Dinkytown Greenway,trail,,,,3593692972,1,2019-06-08,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,3651695149,1,2019-07-07,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Dinkytown Greenway,trail,,,,3651695149,1,2019-07-07,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,3666121645,1,2019-07-14,"Minneapolis, Minnesota",
+Mill Ruins Park / Gold Medal Park / Dinkytown Greenway,trail,,,,3666121645,1,2019-07-14,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,3692519404,1,2019-07-27,"Minneapolis, Minnesota",
+Mill Ruins Park / Nicollet Island / Boom Island Park,trail,,,,3692519404,1,2019-07-27,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,4242745471,1,2020-05-03,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Dinkytown Greenway / Bohemian Flats,trail,,,,4242745471,1,2020-05-03,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,4377962197,1,2020-06-07,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Dinkytown Greenway / Gold Medal Park,trail,,,,4377962197,1,2020-06-07,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,4398980707,1,2020-06-13,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Dinkytown Greenway / Bohemian Flats / Gold Medal Park,trail,,,,4398980707,1,2020-06-13,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,4468270210,1,2020-07-04,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Dinkytown Greenway,trail,,,,4468270210,1,2020-07-04,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,4471376554,1,2020-07-05,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Nicollet Island,trail,,,,4471376554,1,2020-07-05,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,4529698189,1,2020-07-25,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Dinkytown Greenway / Bohemian Flats / Nicollet Island,trail,,,,4529698189,1,2020-07-25,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,4571716114,1,2020-08-08,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge,trail,,,,4571716114,1,2020-08-08,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,4630411540,1,2020-08-29,"Minneapolis, Minnesota",
+Mill Ruins Park / Boom Island Park / Nicollet Island / Stone Arch Bridge,trail,,,,4630411540,1,2020-08-29,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,4706864278,1,2020-09-26,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Nicollet Island / Boom Island Park,trail,,,,4706864278,1,2020-09-26,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,5783334745,1,2021-05-22,"Minneapolis, Minnesota",
+Mill Ruins Park / Water Works Park / Boom Island Park / Nicollet Island / Stone Arch Bridge,trail,,,,5783334745,1,2021-05-22,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,5803540177,1,2021-05-29,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Dinkytown Greenway / Bohemian Flats,trail,,,,5803540177,1,2021-05-29,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,5901067888,1,2021-07-02,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Dinkytown Greenway,trail,,,,5901067888,1,2021-07-02,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,2975059954,1,2018-06-24,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Nicollet Island,trail,,,,2975059954,1,2018-06-24,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,3767884990,1,2019-09-02,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Nicollet Island,trail,,,,3767884990,1,2019-09-02,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,4322592511,1,2020-05-23,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Nicollet Island,trail,,,,4322592511,1,2020-05-23,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,4374886435,1,2020-06-06,"Minneapolis, Minnesota",
+Mill Ruins Park / Nicollet Island / Boom Island Park / Stone Arch Bridge,trail,,,,4374886435,1,2020-06-06,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,4509699817,1,2020-07-18,"Minneapolis, Minnesota",
+Mill Ruins Park / Stone Arch Bridge / Nicollet Island / Boom Island Park,trail,,,,4509699817,1,2020-07-18,"Minneapolis, Minnesota",
+Minneapolis Trails,park,,,,5809329424,1,2021-05-31,"Minneapolis, Minnesota",
+Mill Ruins Park / Water Works Park / Nicollet Island / Stone Arch Bridge,trail,,,,5809329424,1,2021-05-31,"Minneapolis, Minnesota",
