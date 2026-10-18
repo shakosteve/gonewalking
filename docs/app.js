@@ -96,6 +96,8 @@
   }
   const fmtDate = (d, opts) => d.toLocaleDateString("en-US", opts || { month: "short", day: "numeric", year: "numeric" });
   const activityInfo = () => ACTIVITIES.find((a) => a.key === state.activity);
+  /** A bicycle after a ride's date when walks and rides are shown together. */
+  const rideMark = (w) => (state.activity === "all" && w.activity !== "Walk" ? " 🚲" : "");
 
   /** Workouts matching the filters. opts.anyPlace ignores the place filter (for place-comparison charts). */
   // Three Rivers Park District places are the ones whose web link is on its website. A walk counts
@@ -1373,7 +1375,7 @@
       if (!ll.length) continue;
       const line = L.polyline(ll, { color: dim ? css("--deemph") : color, weight: 2, opacity: dim ? 0.5 : 0.55, interactive: true });
       line.on("click", () => selectWalk(w.id, false));
-      line.on("mouseover", (e) => { if (state.selected !== w.id) line.setStyle({ weight: 4, opacity: 0.9 }); showTip(e.originalEvent, fmtMi(w.mi), `${fmtDate(w.day)} · ${withDetail(w)}`); });
+      line.on("mouseover", (e) => { if (state.selected !== w.id) line.setStyle({ weight: 4, opacity: 0.9 }); showTip(e.originalEvent, fmtMi(w.mi), `${fmtDate(w.day)}${rideMark(w)} · ${withDetail(w)}`); });
       line.on("mouseout", () => { if (state.selected !== w.id) line.setStyle({ weight: 2, opacity: dim ? 0.5 : 0.55 }); hideTip(); });
       line.addTo(routeLayer);
       routeLines.set(w.id, line);
@@ -1525,7 +1527,7 @@
     const url = list.find((w) => w.url) ? list.find((w) => w.url).url : null;
     const items = list.map((w) => {
       const row = el("li", {}, el("button", { type: "button", class: "walk-item", onclick: () => selectWalk(w.id, false, { push: true }) }, [
-        el("span", { class: "walk-item-date" }, photosOf(w.id).length ? [fmtDate(w.day), cameraBadge(w)] : fmtDate(w.day)),
+        el("span", { class: "walk-item-date" }, photosOf(w.id).length ? [fmtDate(w.day) + rideMark(w), cameraBadge(w)] : fmtDate(w.day) + rideMark(w)),
         el("span", { class: "walk-item-stats", text: `${fmtMi(w.mi)} · ${fmtPace(w.pace)} /mi` }),
         w.detail ? el("span", { class: "walk-item-sub", text: w.detail }) : null,
       ]));
@@ -1607,7 +1609,7 @@
     const ageText = w.age != null ? ` · age ${w.age}` : "";
     box.replaceChildren(...[
       placeNav(w),
-      el("h3", { text: `${fmtMi(w.mi)} ${w.activity === "Walk" ? "walk" : "ride"}` }),
+      el("h3", { text: `${fmtMi(w.mi)} ${w.activity === "Walk" ? "walk" : "ride"}${rideMark(w)}` }),
       el("div", { class: "when", text: `${fmtDate(w.day, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}${time ? ` · ${time}` : ""}${ageText}` }),
       placeLine(w) ? el("div", { class: "where" }, w.place && w.url ? [
         el("a", { href: w.url, target: "_blank", rel: "noopener", text: `${w.place} ↗` }),
@@ -1789,7 +1791,7 @@
 
   // ---------- walk log ----------
   const COLUMNS = [
-    { key: "date", label: "Date", get: (w) => w.day.getTime(), show: (w) => fmtDate(w.day) },
+    { key: "date", label: "Date", get: (w) => w.day.getTime(), show: (w) => fmtDate(w.day) + rideMark(w) },
     { key: "place", label: "Place", get: (w) => withDetail(w), show: (w) => withDetail(w) },
     { key: "activity", label: "Activity", get: (w) => w.activity, show: (w) => w.activity },
     { key: "mi", label: "Distance", num: true, get: (w) => w.mi, show: (w) => fmtMi(w.mi) },
