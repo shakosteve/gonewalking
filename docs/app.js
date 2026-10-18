@@ -1,9 +1,10 @@
-/* GoneWalking dashboard. Data: window.GW_DATA (stats), window.GW_ROUTES (tracks), window.GW_CONFIG. */
+/* GoneWalking dashboard. Data: window.GW_DATA (stats), window.GW_ROUTES (tracks), window.GW_PHOTOS (albums), window.GW_CONFIG. */
 (function () {
   "use strict";
 
   const DATA = window.GW_DATA;
   const ROUTES = window.GW_ROUTES || {};
+  const PHOTOS = window.GW_PHOTOS || {};
   const CONFIG = window.GW_CONFIG || {};
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -48,7 +49,7 @@
   ].sort((a, b) => a.date - b.date);
   const today = new Date();
 
-  const defaultState = () => ({ year: "all", activity: "Walk", place: "all", home: "all", region: "all", selected: null, sort: { key: "date", dir: -1 }, showAll: false, calYear: null });
+  const defaultState = () => ({ year: "all", activity: "Walk", place: "all", home: "all", region: "all", selected: null, sort: { key: "date", dir: -1 }, showAll: false, calYear: null, photosOnly: false });
   const state = defaultState();
 
   // Regions, nearest to farthest; each keeps a fixed color slot so filtering never repaints them.
@@ -104,6 +105,7 @@
       (opts.anyPlace || state.place === "all" || placeName(w) === state.place) &&
       (opts.anyHome || state.home === "all" || w.home === state.home) &&
       (opts.anyRegion || state.region === "all" || regionOf(w) === state.region) &&
+      (!state.photosOnly || (PHOTOS[w.id] && PHOTOS[w.id].length)) &&
       (!opts.until || w.day <= opts.until));
   }
 
@@ -277,6 +279,12 @@
       type: "button", role: "radio", "aria-checked": String(a.key === state.activity), text: a.label,
       onclick: () => { state.activity = a.key; state.selected = null; renderAll(); },
     })));
+
+    // Only offered once some walks have photos.
+    $("filter-photos-wrap").hidden = !Object.keys(PHOTOS).length;
+    const photosBox = $("filter-photos");
+    photosBox.checked = state.photosOnly;
+    photosBox.onchange = () => { state.photosOnly = photosBox.checked; state.selected = null; state.showAll = false; renderAll(); };
   }
 
   function setPlace(place) {
@@ -1423,6 +1431,14 @@
     }
     const start = ll[0][0];
     L.circleMarker(start, { radius: 6, color: surface, weight: 2, fillColor: css("--series-2"), fillOpacity: 1 }).addTo(selectedLayer).bindTooltip("Start");
+    const w = workouts.find((x) => x.id === id);
+    photosOf(id).forEach((p, i) => {
+      if (!p.ll) return;
+      L.marker(p.ll, { icon: L.divIcon({ className: "photo-pin", html: CAMERA_SVG, iconSize: [26, 26] }), keyboard: true, title: `Photo ${i + 1}` })
+        .bindTooltip(`<img src="${photoUrl(id, p, true)}" alt="" width="${p.w >= p.h ? 160 : Math.round(160 * p.w / p.h)}">`, { direction: "top", offset: [0, -14], className: "photo-tip" })
+        .on("click", () => openAlbum(w, i))
+        .addTo(selectedLayer);
+    });
     if (zoom) map.fitBounds(L.latLngBounds(ll.flat()), { padding: [30, 30], maxZoom: 16 });
   }
 
@@ -1495,7 +1511,7 @@
     const url = list.find((w) => w.url) ? list.find((w) => w.url).url : null;
     const items = list.map((w) => {
       const row = el("li", {}, el("button", { type: "button", class: "walk-item", onclick: () => selectWalk(w.id, false, { push: true }) }, [
-        el("span", { class: "walk-item-date", text: fmtDate(w.day) }),
+        el("span", { class: "walk-item-date" }, photosOf(w.id).length ? [fmtDate(w.day), cameraBadge(w)] : fmtDate(w.day)),
         el("span", { class: "walk-item-stats", text: `${fmtMi(w.mi)} · ${fmtPace(w.pace)} /mi` }),
         w.detail ? el("span", { class: "walk-item-sub", text: w.detail }) : null,
       ]));
@@ -1575,6 +1591,7 @@
       ] : placeLine(w)) : null,
       el("p", { class: "visit", text: visitText }),
       w.notes ? el("p", { class: "notes", text: `“${w.notes}”` }) : null,
+      photoStrip(w),
       el("dl", {}, rows.flatMap(([k, v]) => [el("dt", { text: k }), el("dd", { text: v })])),
       bands.pieces.length ? el("div", { class: "pace-legend" }, [
         "Pace along the route",
@@ -1588,6 +1605,160 @@
         state.place === "all" ? el("button", { type: "button", class: "link-button", text: "Clear selection", onclick: () => clearSelection() }) : null,
       ]),
     ].filter(Boolean));
+  }
+
+  // ---------- photos ----------
+  const CAMERA_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4.5h6l1.5 2H20a1.5 1.5 0 0 1 1.5 1.5v10a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 18V8A1.5 1.5 0 0 1 4 6.5h3.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12.5" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+  const photosOf = (id) => PHOTOS[id] || [];
+  const photoUrl = (id, p, thumb) => `photos/${id}/${p.f}${thumb ? "_t" : ""}.jpg`;
+  const plural = (n, one, many) => `${fmtNum(n)} ${n === 1 ? one : many}`;
+
+  /** A small camera and count, for lists of walks. */
+  function cameraBadge(w) {
+    const n = photosOf(w.id).length;
+    const badge = el("span", { class: "camera-badge", title: plural(n, "photo", "photos"), "aria-label": plural(n, "photo", "photos") });
+    badge.innerHTML = CAMERA_SVG;
+    badge.append(String(n));
+    return badge;
+  }
+
+  /** Miles along the route at a number of seconds into the walk (scaled to the walk's full distance,
+   *  since the published route is simplified and a little shorter). */
+  function milesAt(w, secs) {
+    let km = 0, at = null;
+    for (const seg of ROUTES[w.id] || []) {
+      let prev = null, prevT = null;
+      for (let i = 0; i < seg.length; i += 3) {
+        const pt = [seg[i], seg[i + 1]], t = seg[i + 2];
+        const step = prev ? kmBetween(prev, pt) : 0;
+        if (at == null && t > secs) at = km + (prev && t > prevT ? step * Math.max(0, secs - prevT) / (t - prevT) : 0);
+        km += step;
+        prev = pt; prevT = t;
+      }
+    }
+    return km ? (at ?? km) / km * w.mi : 0;
+  }
+  function kmBetween(a, b) {
+    const r = Math.PI / 180;
+    const h = Math.sin((b[0] - a[0]) * r / 2) ** 2 + Math.cos(a[0] * r) * Math.cos(b[0] * r) * Math.sin((b[1] - a[1]) * r / 2) ** 2;
+    return 12742 * Math.asin(Math.sqrt(h));
+  }
+
+  function photoCaption(w, p) {
+    const time = p.time ? new Date(p.time).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }) : null;
+    let along = null;
+    if (p.t != null && p.t <= w.dur) {
+      const mi = milesAt(w, p.t);
+      along = mi < 0.1 ? "at the start" : `${fmtNum(mi, 1)} mi in`;
+    } else if (p.t != null) along = "after the walk";
+    return [time, along].filter(Boolean).join(" · ");
+  }
+
+  /** Thumbnails in the walk card; the last one says how many more there are. */
+  function photoStrip(w) {
+    const list = photosOf(w.id);
+    if (!list.length) return null;
+    const shown = list.slice(0, 6);
+    return el("div", { class: "photo-strip" }, [
+      el("div", { class: "photo-strip-head" }, [
+        el("span", { text: plural(list.length, "photo", "photos") }),
+        el("button", { type: "button", class: "link-button", text: "Open album", onclick: () => openAlbum(w, null) }),
+      ]),
+      el("div", { class: "photo-thumbs" }, shown.map((p, i) => {
+        const more = i === shown.length - 1 && list.length > shown.length ? list.length - shown.length : 0;
+        return el("button", {
+          type: "button", class: "photo-thumb", "aria-label": `Photo ${i + 1} of ${list.length}${more ? `, and ${more} more` : ""}`,
+          onclick: () => openAlbum(w, more ? null : i),
+        }, [
+          el("img", { src: photoUrl(w.id, p, true), alt: "", loading: "lazy" }),
+          more ? el("span", { class: "photo-more", text: `+${more}` }) : null,
+        ]);
+      })),
+    ]);
+  }
+
+  // The album: a grid of a walk's photos, or one photo large. Back (or Esc) closes it.
+  const album = { w: null, index: null, opener: null };
+
+  function openAlbum(w, index) {
+    const box = $("album");
+    if (box.hidden) {
+      album.opener = document.activeElement;
+      box.hidden = false;
+      document.body.classList.add("album-open");
+      history.pushState(Object.assign({}, history.state, { album: true }), "", location.href);
+    }
+    album.w = w;
+    album.index = index;
+    renderAlbum();
+  }
+
+  function closeAlbum(fromHistory = false) {
+    const box = $("album");
+    if (box.hidden) return;
+    box.hidden = true;
+    document.body.classList.remove("album-open");
+    $("album-body").replaceChildren();
+    if (!fromHistory && history.state && history.state.album) history.back();
+    if (album.opener && album.opener.isConnected) album.opener.focus();
+  }
+
+  function renderAlbum() {
+    const { w, index } = album;
+    const list = photosOf(w.id);
+    const noun = w.activity === "Walk" ? "walk" : "ride";
+    $("album-title").textContent = `${fmtDate(w.day, { weekday: "short", month: "long", day: "numeric", year: "numeric" })} · ${placeName(w)}`;
+    $("album-sub").textContent = index == null ? `${plural(list.length, "photo", "photos")} · ${fmtMi(w.mi)} ${noun}` : `${index + 1} of ${list.length}`;
+    const body = $("album-body");
+    if (index == null) {
+      body.replaceChildren(el("div", { class: "album-grid" }, list.map((p, i) => el("button", {
+        type: "button", class: "album-cell", "aria-label": `Photo ${i + 1}: ${photoCaption(w, p)}`, onclick: () => openAlbum(w, i),
+      }, [el("img", { src: photoUrl(w.id, p, true), alt: "", loading: "lazy" }), el("span", { class: "album-cell-cap", text: photoCaption(w, p) })]))));
+      const first = body.querySelector(".album-cell");
+      if (first) first.focus();
+      return;
+    }
+    const p = list[index];
+    const step = (d) => openAlbum(w, (index + d + list.length) % list.length);
+    const img = el("img", { class: "album-photo", src: photoUrl(w.id, p, false), alt: `Photo ${index + 1} from this ${noun}`, width: p.w, height: p.h });
+    body.replaceChildren(el("figure", { class: "album-view" }, [
+      list.length > 1 ? el("button", { type: "button", class: "album-step prev", "aria-label": "Previous photo", text: "‹", onclick: () => step(-1) }) : null,
+      img,
+      list.length > 1 ? el("button", { type: "button", class: "album-step next", "aria-label": "Next photo", text: "›", onclick: () => step(1) }) : null,
+      el("figcaption", {}, [
+        el("span", { text: photoCaption(w, p) }),
+        el("span", { class: "album-actions" }, [
+          list.length > 1 ? el("button", { type: "button", class: "link-button", text: "All photos", onclick: () => openAlbum(w, null) }) : null,
+          p.ll && map ? el("button", { type: "button", class: "link-button", text: "Show on map", onclick: () => showPhotoOnMap(w, p) }) : null,
+        ]),
+      ]),
+    ]));
+    // Swipe left or right on touch screens.
+    let x0 = null;
+    img.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") x0 = e.clientX; });
+    img.addEventListener("pointerup", (e) => { if (x0 != null && Math.abs(e.clientX - x0) > 40) step(e.clientX < x0 ? 1 : -1); x0 = null; });
+    if (list.length > 1) new Image().src = photoUrl(w.id, list[(index + 1) % list.length], false);
+  }
+
+  function showPhotoOnMap(w, p) {
+    closeAlbum();
+    if (state.selected !== w.id) selectWalk(w.id, false);
+    document.querySelector(".map-card").scrollIntoView({ behavior: "smooth", block: "start" });
+    map.setView(p.ll, Math.max(map.getZoom(), 16));
+  }
+
+  function initAlbum() {
+    $("album-close").addEventListener("click", () => closeAlbum());
+    $("album").addEventListener("click", (e) => { if (e.target.id === "album" || e.target.classList.contains("album-view")) closeAlbum(); });
+    document.addEventListener("keydown", (e) => {
+      if ($("album").hidden) return;
+      if (e.key === "Escape") { e.preventDefault(); closeAlbum(); }
+      else if (album.index != null && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+        const n = photosOf(album.w.id).length;
+        openAlbum(album.w, (album.index + (e.key === "ArrowRight" ? 1 : -1) + n) % n);
+      }
+    });
+    window.addEventListener("popstate", () => { if (!$("album").hidden && !(history.state && history.state.album)) closeAlbum(true); });
   }
 
   // ---------- walk log ----------
@@ -1625,7 +1796,8 @@
       class: w.id === state.selected ? "selected" : null, tabindex: 0,
       onclick: () => selectWalk(w.id, true),
       onkeydown: (e) => { if (e.key === "Enter") selectWalk(w.id, true); },
-    }, COLUMNS.map((c) => el("td", { class: c.num ? "num" : c.cls || null, text: c.show(w) })))));
+    }, COLUMNS.map((c) => el("td", { class: c.num ? "num" : c.cls || null },
+      c.key === "date" && photosOf(w.id).length ? [c.show(w), cameraBadge(w)] : c.show(w))))));
     table.replaceChildren(el("thead", {}, head), body);
     const more = $("log-more");
     more.hidden = list.length <= 25;
@@ -1767,6 +1939,7 @@
   $("reset-view").addEventListener("click", resetView);
   initMap();
   initDetailHover();
+  initAlbum();
   renderAll();
   function readHash() {
     const q = new URLSearchParams(location.hash.slice(1));

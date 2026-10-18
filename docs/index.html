@@ -68,6 +68,10 @@
         <span id="activity-label">Activity</span>
         <div class="segmented" role="radiogroup" aria-labelledby="activity-label" id="filter-activity"></div>
       </div>
+      <label class="filter filter-check" id="filter-photos-wrap" hidden>
+        <span>Photos</span>
+        <span class="check"><input type="checkbox" id="filter-photos"> With photos</span>
+      </label>
       <div class="filter section-controls">
         <span>Sections</span>
         <div>
@@ -149,10 +153,22 @@
 
   <div class="tooltip" id="tooltip" role="tooltip" hidden></div>
 
+  <div class="album" id="album" role="dialog" aria-modal="true" aria-labelledby="album-title" hidden>
+    <div class="album-bar">
+      <div>
+        <h2 id="album-title"></h2>
+        <p id="album-sub"></p>
+      </div>
+      <button type="button" class="album-close" id="album-close" aria-label="Close album">×</button>
+    </div>
+    <div class="album-body" id="album-body"></div>
+  </div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="config.js"></script>
   <script src="data/workouts.js"></script>
   <script src="data/routes.js"></script>
+  <script src="data/photos.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

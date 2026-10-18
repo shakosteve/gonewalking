@@ -29,6 +29,7 @@ does, the tool stops with a message telling you to refresh it.
 python gonewalking.py sync       # refresh stats, download new GPS tracks, build compact tracks
 python gonewalking.py stats      # refresh stats only
 python gonewalking.py process    # rebuild compact tracks from TCX files (--force to redo all)
+python gonewalking.py photos     # match your photos to walks and publish them as albums
 ```
 
 `sync` is safe to run any time: it only downloads and processes tracks it doesn't already have.
@@ -71,6 +72,59 @@ Two hand-edited files refine the results:
 - `place_aliases.csv` (`osm_name,name`): renames an OpenStreetMap park or trail name everywhere
   it appears.
 - `place_links.csv` (`name,url`): a web page for a place, overriding the one from OpenStreetMap.
+
+## Photos
+
+`python gonewalking.py photos` matches your photos to walks and publishes the likely ones as an
+album on each walk. Photos not taken during a walk (or within 10 minutes of one), more than
+300 m from its track, or with no location at all, are skipped. Each remaining photo gets a certainty score from:
+
+- how close it was to the track at the time (within 30 m counts fully, up to 300 m much less);
+- whether it was taken during the walk or just before or after;
+- how its time and location were recorded (the camera's own, or Google's, which may be estimated);
+- what it shows, once checked (see below): walk photos are outdoors, so indoor, in-vehicle and
+  screenshot photos count against it.
+
+90% and up is published; 50–90% is held for your review and not published; below that is left off.
+
+**Near-duplicates.** Photos on the same walk taken within 60 seconds of each other, framed the
+same way (both portrait or both landscape) and nearly identical are grouped, and only the
+sharpest of each group is published. The others appear under "Near-duplicates" on the review
+page, where **Keep it too** publishes one anyway (`keep` = `yes` in `photo_overrides.csv`).
+
+Time and location come from the photo itself, or from the `.json` file Google Takeout saves beside
+each photo. Duplicates count once, and an edited copy ("-edited") is used instead of its original.
+What each photo file says is kept in `data/photo_cache.json`, so later runs only read new photos.
+
+Where the photos are: new photos go in `photo_drop/` in this folder (set by `PHOTOS_DIR=photo_drop`
+in `.env`; git ignores the folder). Several folders can be listed, separated by `;`, or named on
+the command line. Albums build up over time: photos published by earlier runs stay published
+(recorded in `data/photo_published.json`) even after they leave `photo_drop/`, unless you reject
+them. A new photo nearly identical to one already published is set aside as a near-duplicate.
+Run `photos` after `sync` to pick up photos from new walks.
+
+**Reviewing.** Open `data/photo_review.html` in a browser (it is never published). It shows the
+photos to review, and the published ones, with their score, the reasons, and links to the map, the
+walk and the original file. Approve or reject each, then **Download photo_overrides.csv**, save it
+in this folder (replacing the old one) and run `photos` again. `photo_overrides.csv`
+(`file,workout_id,keep`) can also be edited by hand: a `workout_id` publishes the photo on that walk, a
+blank one keeps it off the site. These decisions win over the score.
+
+**What a photo shows.** `photo_content.csv` (`file,content`) records whether each candidate photo
+is `outdoor`, `indoor`, `vehicle`, `screen` (a screenshot or document) or `unclear`. PNGs and
+screenshots are marked `screen` automatically. `photos --sheets` makes numbered contact sheets of
+the candidates not yet checked (`data/photo_review/sheets/`, with `index.json` saying which photo
+is which), for filling this in, by eye or by asking Claude to look at them.
+
+It writes:
+
+- `docs/photos/{workout_id}/`: a 1024 px web copy and a 400 px thumbnail of each published photo.
+  Their EXIF is removed, so the published files carry no location, camera or time details.
+- `docs/data/photos.js`: which photos each walk has, when and where on the route.
+- `data/photo_matches.csv`: every photo looked at, with its status, score and why.
+- `data/photo_review.html` and `data/photo_review/`: the review page and its thumbnails.
+
+Published photos count toward GitHub Pages' 1 GB site limit: each one takes about 250 KB.
 
 ## Dashboard (`docs/`)
 

@@ -3,6 +3,7 @@
 
 # Downloaded personal data
 /data/
+/photo_drop/
 
 # Python
 __pycache__/

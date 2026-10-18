@@ -6,6 +6,7 @@ Usage:
     python gonewalking.py stats             # refresh the stats CSV only
     python gonewalking.py process           # rebuild tracks, clean stats CSV and KML from downloads
     python gonewalking.py places            # look up park/city for new walks, list unnamed spots
+    python gonewalking.py photos            # match photos (PHOTOS_DIR in .env) to walks, publish albums
 
 Authentication comes from MMF_AUTH_TOKEN in .env (the "auth-token" cookie from
 a logged-in browser session on mapmyfitness.com).
@@ -24,6 +25,7 @@ from pathlib import Path
 import requests
 
 import exports
+import photos
 import places
 import tracks
 
@@ -34,6 +36,9 @@ TRACKS_DIR = DATA_DIR / "tracks"
 SITE_DATA_DIR = ROOT / "docs" / "data"
 PLACE_OVERRIDES = ROOT / "place_overrides.csv"
 PLACE_LINKS = ROOT / "place_links.csv"
+PHOTO_OVERRIDES = ROOT / "photo_overrides.csv"
+PHOTO_CONTENT = ROOT / "photo_content.csv"
+SITE_DIR = ROOT / "docs"
 STATS_CSV = DATA_DIR / "workouts.csv"
 MANIFEST = DATA_DIR / "manifest.json"
 
@@ -218,6 +223,9 @@ def main():
     process_cmd = sub.add_parser("process", help="rebuild tracks, clean stats CSV and KML from downloads")
     process_cmd.add_argument("--force", action="store_true", help="reprocess every track, even if up to date")
     sub.add_parser("places", help="look up park/city names for new walks and list walks without one")
+    photos_cmd = sub.add_parser("photos", help="match your photos to walks and publish them as albums")
+    photos_cmd.add_argument("folders", nargs="*", help="photo folders or files (default: PHOTOS_DIR in .env)")
+    photos_cmd.add_argument("--sheets", action="store_true", help="also make contact sheets of photos whose content isn't checked yet")
     args = parser.parse_args()
 
     if args.command == "process":
@@ -225,6 +233,17 @@ def main():
         return
     if args.command == "places":
         print_unknown_places(process(fetch_places=True))
+        return
+    if args.command == "photos":
+        load_env()
+        folders = args.folders or [str(ROOT / f.strip()) for f in os.environ.get("PHOTOS_DIR", "").split(";") if f.strip()]
+        if not folders:
+            sys.exit("Say where your photos are: python gonewalking.py photos <folder>, or PHOTOS_DIR=<folder> in .env "
+                     "(several folders separated by ;).")
+        missing = [f for f in folders if not Path(f).exists()]
+        if missing:
+            sys.exit(f"Not found: {', '.join(missing)}")
+        photos.update_photos(folders, TRACKS_DIR, DATA_DIR, SITE_DIR, PHOTO_OVERRIDES, PHOTO_CONTENT, sheets=args.sheets)
         return
 
     load_env()
