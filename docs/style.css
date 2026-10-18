@@ -346,6 +346,8 @@ h2 { margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: c
 .walk-detail .when { color: var(--text-secondary); font-size: 13px; margin-bottom: 12px; }
 .walk-detail .where { font-size: 14px; font-weight: 600; margin: -10px 0 4px; }
 .walk-detail .visit { font-size: 13px; color: var(--text-secondary); margin: 0 0 12px; }
+.walk-detail .visit:has(+ .place-link) { margin-bottom: 2px; }
+.walk-detail .place-link { display: block; margin: 0 0 12px; text-align: left; }
 .walk-detail dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0 0 12px; }
 .walk-detail dt { color: var(--text-secondary); }
 .walk-detail dd { margin: 0; font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }

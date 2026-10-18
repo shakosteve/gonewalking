@@ -301,12 +301,12 @@
     trpdBox.onchange = () => { state.threeRiversOnly = trpdBox.checked; state.selected = null; state.showAll = false; renderAll(); };
   }
 
-  function setPlace(place) {
+  function setPlace(place, { push = false } = {}) {
     state.place = place;
     state.selected = null;
     state.showAll = false;
     renderAll();
-    writeHash();
+    writeHash(push);
   }
 
   function setYear(year) {
@@ -1545,6 +1545,17 @@
       el("button", { type: "button", class: "link-button", text: "Show all places", onclick: () => setPlace("all") }));
   }
 
+  /** From a walk on the overview, a link to every walk at its place (in the current filters). Back returns to the walk. */
+  function placeLink(w) {
+    if (state.place !== "all") return null;
+    const place = placeName(w);
+    const n = filtered(state.year, { anyPlace: true }).filter((x) => placeName(x) === place).length;
+    if (n < 2) return null;
+    const info = activityInfo();
+    return el("button", { type: "button", class: "link-button place-link", text: `All ${fmtNum(n)} ${info.nouns} at ${place} →`,
+      onclick: () => setPlace(place, { push: true }) });
+  }
+
   /** Back to the list, plus newer/older, when browsing a place's walks. */
   function placeNav(w) {
     if (state.place === "all") return null;
@@ -1604,6 +1615,7 @@
         whereParts(w).length ? `, ${whereParts(w).join(", ")}` : null,
       ] : placeLine(w)) : null,
       el("p", { class: "visit", text: visitText }),
+      placeLink(w),
       w.notes ? el("p", { class: "notes", text: `“${w.notes}”` }) : null,
       photoStrip(w),
       el("dl", {}, rows.flatMap(([k, v]) => [el("dt", { text: k }), el("dd", { text: v })])),
