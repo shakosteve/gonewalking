@@ -52,6 +52,33 @@ data/
 
 `process` (and therefore `sync`) rebuilds `tracks/`, `workouts_clean.csv` and `kml/`.
 
+## Scheduled updates
+
+`sync.bat` runs `sync` and then `photos` (when `PHOTOS_DIR` is set), logs everything to
+`data/logs/` (the newest 30 runs are kept) and shows a Windows notification saying how it went:
+any new walks, a failure and why (an expired MapMyFitness token is spelled out), or a warning when
+the token is within 14 days of expiring. Click the notification to open the log. It exits with an
+error code when a step fails, so Task Scheduler shows the run as failed too. The site files are
+updated; commit and push `docs/` to publish them.
+
+To schedule it: Task Scheduler → **Create Basic Task** → daily → **Start a program** →
+`C:\code\GoneWalking\sync.bat`. Keep **Run only when user is logged on** (the default): Windows only
+shows notifications in your own signed-in session, so pick a time you're usually at the PC. If the
+PC was off or asleep then, tick **Run task as soon as possible after a scheduled start is missed**
+(task properties → Settings).
+
+Optional settings in `.env`:
+
+```
+MMF_TOKEN_EXPIRES=2026-12-13        # the token's expiry date, for the warning
+REPORT_ON=always                    # or "failure" to hear only about problems (and expiry)
+WINDOWS_NOTIFY=off                  # no notification
+# REPORT_EMAIL=you@example.com      # also e-mail the report (needs SMTP_PASSWORD; see scheduled_sync.py)
+```
+
+`python scheduled_sync.py --test` shows a test notification; `--dry-run` runs everything but prints
+the report instead.
+
 ## Places and regions
 
 `python gonewalking.py places` (also run by `sync`) works out where each walk was, using
