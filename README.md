@@ -128,7 +128,9 @@ in `.env`; git ignores the folder). Several folders can be listed, separated by 
 the command line. Albums build up over time: photos published by earlier runs stay published
 (recorded in `data/photo_published.json`) even after they leave `photo_drop/`, unless you reject
 them. A new photo nearly identical to one already published is set aside as a near-duplicate.
-Run `photos` after `sync` to pick up photos from new walks.
+Run `photos` after `sync` to pick up photos from new walks. Once a photo from `photo_drop/` is published, it's moved
+to the Recycle Bin (with any Takeout `.json` beside it); photos to review, near-duplicates and photos
+that don't match a walk stay there. Folders named on the command line are never emptied.
 
 **Reviewing.** `python gonewalking.py photos --review` also writes `data/photo_review.html`; open it
 in a browser (it is never published, and the next run without `--review` removes it). It shows the

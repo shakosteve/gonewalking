@@ -244,7 +244,11 @@ def main():
         missing = [f for f in folders if not Path(f).exists()]
         if missing:
             sys.exit(f"Not found: {', '.join(missing)}")
-        photos.update_photos(folders, TRACKS_DIR, DATA_DIR, SITE_DIR, PHOTO_OVERRIDES, PHOTO_CONTENT, sheets=args.sheets, review=args.review)
+        # Photos dropped in PHOTOS_DIR are only parked there: once published, they're cleared out.
+        # Folders named on the command line are never touched.
+        clear = None if args.folders else folders
+        photos.update_photos(folders, TRACKS_DIR, DATA_DIR, SITE_DIR, PHOTO_OVERRIDES, PHOTO_CONTENT,
+                             sheets=args.sheets, review=args.review, clear_from=clear)
         return
 
     load_env()

@@ -37,8 +37,10 @@ import csv
 import hashlib
 import json
 import math
+import os
 import re
 import shutil
+import subprocess
 import time
 import warnings
 from datetime import datetime, timedelta, timezone
@@ -399,7 +401,8 @@ def write_review_page(rows, overrides, keeps, out_path):
     out_path.write_text(page, encoding="utf-8")
 
 
-def update_photos(sources, tracks_dir, data_dir, site_dir, overrides_path, content_path, sheets=False, review=False):
+def update_photos(sources, tracks_dir, data_dir, site_dir, overrides_path, content_path, sheets=False, review=False,
+                  clear_from=None):
     data_dir, site_dir = Path(data_dir), Path(site_dir)
     walks = load_walks(tracks_dir)
     by_id = {w["id"]: w for w in walks}
@@ -567,6 +570,7 @@ def update_photos(sources, tracks_dir, data_dir, site_dir, overrides_path, conte
     elif review_page.exists():
         review_page.unlink()
     unchecked = make_sheets(rows, data_dir) if sheets else 0
+    cleared = clear_published(rows, clear_from) if clear_from else None
 
     count = lambda s: sum(r["status"] == s for r in rows)
     published = sum(len(a) for a in albums.values())
@@ -583,7 +587,46 @@ def update_photos(sources, tracks_dir, data_dir, site_dir, overrides_path, conte
         print(f"Review them: {review_page}" if review else "Review them: python gonewalking.py photos --review")
     if sheets:
         print(f"Contact sheets: {unchecked} photos not yet checked -> {data_dir / 'photo_sheets'}")
+    if cleared:
+        print(cleared)
     return albums
+
+
+# Moves files to the Recycle Bin (so a mistake can be undone) without any prompts.
+RECYCLE_PS = r"""
+Add-Type -AssemblyName Microsoft.VisualBasic
+foreach ($p in ($env:GW_RECYCLE -split "`n")) {
+  if ($p -and (Test-Path -LiteralPath $p)) {
+    [Microsoft.VisualBasic.FileIO.FileSystem]::DeleteFile($p, 'OnlyErrorDialogs', 'SendToRecycleBin')
+  }
+}
+"""
+
+
+def clear_published(rows, folders):
+    """Move photos that are now published out of the drop folder(s), with any Takeout .json beside them.
+    Photos to review, near-duplicates and unmatched photos stay put."""
+    roots = [Path(f).resolve() for f in folders]
+    done = [Path(r["source"]) for r in rows if r["status"] == "published" and r.get("source")]
+    done = [p for p in done if p.exists() and any(p.resolve().is_relative_to(root) for root in roots)]
+    if not done:
+        return None
+    files = list(done)
+    for p in done:  # Takeout's "X.jpg.json" / "X.jpg.supplemental-metadata.json"
+        files += [j for j in p.parent.glob(f"{p.name}.*json") if j.is_file()]
+    if os.name != "nt":
+        return f"Published {len(done)} photos; they're still in {', '.join(map(str, folders))} (Recycle Bin is Windows-only)."
+    try:
+        subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", RECYCLE_PS],
+                       env=dict(os.environ, GW_RECYCLE="\n".join(map(str, files))), capture_output=True, timeout=300)
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    left = [p for p in done if p.exists()]
+    moved = len(done) - len(left)
+    msg = f"Cleared {moved} published photos from {', '.join(map(str, folders))} (moved to the Recycle Bin)."
+    if left:
+        msg += f" Couldn't move {len(left)}: {', '.join(p.name for p in left[:5])}{' ...' if len(left) > 5 else ''}"
+    return msg
 
 
 REVIEW_PAGE = r"""<!doctype html>
