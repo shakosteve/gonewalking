@@ -98,6 +98,11 @@
   const activityInfo = () => ACTIVITIES.find((a) => a.key === state.activity);
   /** A bicycle after a ride's date when walks and rides are shown together. */
   const rideMark = (w) => (state.activity === "all" && w.activity !== "Walk" ? " 🚲" : "");
+  /** A "New" tag for walks from the last 3 days (by the viewer's clock). */
+  const isNew = (w) => Date.now() - (w.start ? new Date(w.start) : w.day).getTime() < 3 * 864e5;
+  const newBadge = (w) => (isNew(w) ? el("span", { class: "new-badge", text: "New", title: "From the last 3 days" }) : null);
+  /** A walk's date with its tags (new, ride, photos), for lists. */
+  const dateWithTags = (w) => [fmtDate(w.day) + rideMark(w), newBadge(w), photosOf(w.id).length ? cameraBadge(w) : null].filter(Boolean);
 
   /** Workouts matching the filters. opts.anyPlace ignores the place filter (for place-comparison charts). */
   // Three Rivers Park District places are the ones whose web link is on its website. A walk counts
@@ -1527,7 +1532,7 @@
     const url = list.find((w) => w.url) ? list.find((w) => w.url).url : null;
     const items = list.map((w) => {
       const row = el("li", {}, el("button", { type: "button", class: "walk-item", onclick: () => selectWalk(w.id, false, { push: true }) }, [
-        el("span", { class: "walk-item-date" }, photosOf(w.id).length ? [fmtDate(w.day) + rideMark(w), cameraBadge(w)] : fmtDate(w.day) + rideMark(w)),
+        el("span", { class: "walk-item-date" }, dateWithTags(w)),
         el("span", { class: "walk-item-stats", text: `${fmtMi(w.mi)} · ${fmtPace(w.pace)} /mi` }),
         w.detail ? el("span", { class: "walk-item-sub", text: w.detail }) : null,
       ]));
@@ -1609,7 +1614,7 @@
     const ageText = w.age != null ? ` · age ${w.age}` : "";
     box.replaceChildren(...[
       placeNav(w),
-      el("h3", { text: `${fmtMi(w.mi)} ${w.activity === "Walk" ? "walk" : "ride"}${rideMark(w)}` }),
+      el("h3", {}, [`${fmtMi(w.mi)} ${w.activity === "Walk" ? "walk" : "ride"}${rideMark(w)}`, newBadge(w)].filter(Boolean)),
       el("div", { class: "when", text: `${fmtDate(w.day, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}${time ? ` · ${time}` : ""}${ageText}` }),
       placeLine(w) ? el("div", { class: "where" }, w.place && w.url ? [
         el("a", { href: w.url, target: "_blank", rel: "noopener", text: `${w.place} ↗` }),
@@ -1825,7 +1830,7 @@
       onclick: () => selectWalk(w.id, true),
       onkeydown: (e) => { if (e.key === "Enter") selectWalk(w.id, true); },
     }, COLUMNS.map((c) => el("td", { class: c.num ? "num" : c.cls || null },
-      c.key === "date" && photosOf(w.id).length ? [c.show(w), cameraBadge(w)] : c.show(w))))));
+      c.key === "date" ? dateWithTags(w) : c.show(w))))));
     table.replaceChildren(el("thead", {}, head), body);
     const more = $("log-more");
     more.hidden = list.length <= 25;
