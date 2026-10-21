@@ -1794,6 +1794,30 @@
     window.addEventListener("popstate", () => { if (!$("album").hidden && !(history.state && history.state.album)) closeAlbum(true); });
   }
 
+  // ---------- latest walk ----------
+  /** One line above the summary about the most recent walk or ride; click it to open that walk. */
+  function renderLatest() {
+    const box = $("latest");
+    const w = workouts.slice().sort((a, b) => (b.start || b.date).localeCompare(a.start || a.date))[0];
+    if (!w) { box.hidden = true; return; }
+    const who = (CONFIG.ownerName || "").split(" ")[0] || "I";
+    const verb = w.activity === "Walk" ? "walked" : "rode";
+    const sameYear = w.year === new Date().getFullYear();
+    const when = fmtDate(w.day, { weekday: "long", month: "long", day: "numeric", ...(sameYear ? {} : { year: "numeric" }) });
+    const open = () => {
+      // Make sure the walk is in view: widen the activity and place filters if they hide it.
+      if (state.activity !== "all" && w.activity !== state.activity) state.activity = "all";
+      if (state.place !== "all" && placeName(w) !== state.place) state.place = "all";
+      renderAll();
+      selectWalk(w.id, true, { push: true });
+    };
+    box.replaceChildren(
+      el("button", { type: "button", class: "link-button latest-link", onclick: open,
+        text: `On ${when}, ${who} ${verb} ${fmtNum(w.mi, 1)} miles at ${placeName(w)}` }),
+      newBadge(w),
+      photosOf(w.id).length ? cameraBadge(w) : null);
+  }
+
   // ---------- walk log ----------
   const COLUMNS = [
     { key: "date", label: "Date", get: (w) => w.day.getTime(), show: (w) => fmtDate(w.day) + rideMark(w) },
@@ -1974,6 +1998,7 @@
   initDetailHover();
   initAlbum();
   renderAll();
+  renderLatest();
   function readHash() {
     const q = new URLSearchParams(location.hash.slice(1));
     const place = q.get("place") || "all";
