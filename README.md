@@ -162,7 +162,7 @@ Published photos count toward GitHub Pages' 1 GB site limit: each one takes abou
 A static site, published at **https://shakosteve.github.io/gonewalking/** by GitHub Pages
 (Settings → Pages → Deploy from a branch → `main`, `/docs`; `docs/.nojekyll` makes Pages serve
 the files as-is). `process` refreshes its data in `docs/data/` (stats, simplified routes and
-KML); everything else in `docs/` is hand-written.
+KML) and the walks' share pages in `docs/w/`; everything else in `docs/` is hand-written.
 
 To update the live site: run `python gonewalking.py sync`, then commit and push the changes in
 `docs/` (and any edited `place_*.csv` files). Pages republishes within a minute or two.
@@ -193,6 +193,14 @@ The address keeps track of what you're looking at, so views can be linked and bo
 `#place=Murphy-Hanrehan%20Park%20Reserve` opens a place with its walk list beside the map, and
 `#walk={workout_id}` (optionally after a place, joined with `&`) opens one walk. The browser's
 Back and Forward move between a place's walk list and its walks.
+
+Social media link previews ignore everything after `#`, so those links all preview as the home
+page. To share one walk, use its **Copy link to this walk** button (**Share this walk** on a
+phone), which gives `w/{workout_id}.html`: a page made by `process` (`previews.py`) with that
+walk's own title, stats and a 1200×630 picture of its route on an OpenStreetMap map, which sends
+visitors on to the walk on the dashboard. The map tiles are cached in `data/tile_cache/`, and a
+picture is only redrawn when its walk's route or text changes (`data/previews.json`); bump
+`STYLE_VERSION` in `previews.py` to redraw them all after changing how they look.
 
 ### Clean stats (`data/workouts_clean.csv`)
 

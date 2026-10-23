@@ -4,7 +4,7 @@ Usage:
     python gonewalking.py sync              # refresh stats CSV, download any missing TCX files
     python gonewalking.py sync --limit 5    # only download up to 5 new TCX files
     python gonewalking.py stats             # refresh the stats CSV only
-    python gonewalking.py process           # rebuild tracks, clean stats CSV and KML from downloads
+    python gonewalking.py process           # rebuild tracks, clean stats CSV, KML and share pages from downloads
     python gonewalking.py places            # look up park/city for new walks, list unnamed spots
     python gonewalking.py photos            # match photos (PHOTOS_DIR in .env) to walks, publish albums
 
@@ -27,6 +27,7 @@ import requests
 import exports
 import photos
 import places
+import previews
 import tracks
 
 ROOT = Path(__file__).resolve().parent
@@ -192,7 +193,8 @@ def download_tracks(session, workouts, manifest, limit=None, delay=2.0):
 def process(force=False, fetch_places=False):
     tracks.process_all(STATS_CSV, TCX_DIR, TRACKS_DIR, force=force)
     found = places.update_places(TRACKS_DIR, DATA_DIR, PLACE_OVERRIDES, fetch_missing=fetch_places, links_path=PLACE_LINKS)
-    exports.export_all(STATS_CSV, TRACKS_DIR, DATA_DIR, SITE_DATA_DIR)
+    workouts, routes = exports.export_all(STATS_CSV, TRACKS_DIR, DATA_DIR, SITE_DATA_DIR)
+    previews.update_previews(workouts, routes, SITE_DIR, DATA_DIR)
     return found
 
 

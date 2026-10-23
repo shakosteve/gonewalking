@@ -1635,9 +1635,31 @@
         el("a", { href: w.link.replace("http://", "https://"), target: "_blank", rel: "noopener", text: "View on MapMyWalk ↗" }),
         w.latlon ? el("a", { href: `https://www.google.com/maps/search/?api=1&query=${w.latlon[0]},${w.latlon[1]}`, target: "_blank", rel: "noopener", text: "Start point in Google Maps ↗" }) : null,
         el("a", { href: kmlUrl, download: `${w.date}-${w.id}.kml`, text: "Download this route (KML)" }),
+        el("button", { type: "button", class: "link-button", text: shareLabel(), onclick: (e) => shareWalk(w, e.currentTarget) }),
         state.place === "all" ? el("button", { type: "button", class: "link-button", text: "Clear selection", onclick: () => clearSelection() }) : null,
       ]),
     ].filter(Boolean));
+  }
+
+  /** Phones get their share sheet; elsewhere the link is copied. */
+  const useShareSheet = () => Boolean(navigator.share) && matchMedia("(pointer: coarse)").matches;
+  const shareLabel = () => (useShareSheet() ? "Share this walk" : "Copy link to this walk");
+
+  /** The walk's own share page (docs/w/<id>.html), whose link preview shows this walk, not the home page. */
+  async function shareWalk(w, button) {
+    const url = new URL(`w/${w.id}.html`, location.href).href;
+    if (useShareSheet()) {
+      try { await navigator.share({ title: `${withDetail(w)} · ${fmtDate(w.day)}`, url }); } catch (e) { /* closed without sharing */ }
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch (e) {
+      prompt("Copy this link:", url);
+      return;
+    }
+    button.textContent = "Link copied";
+    setTimeout(() => { button.textContent = shareLabel(); }, 2000);
   }
 
   // ---------- photos ----------
