@@ -3,7 +3,6 @@
 - data/workouts_clean.csv: one row per workout, MapMyWalk's stats corrected with GPS-derived values
 - data/kml/all_routes.kml and data/kml/{year}.kml: simplified routes for Google My Maps
 - docs/data/: the dashboard's copy of the stats, routes and KML (published with the site)
-  (export_all returns the site's workouts and routes, for previews.py's share pages)
 """
 
 import csv
@@ -288,7 +287,6 @@ def write_site_data(rows, track_features, kml_dir, site_data_dir):
     for kml in Path(kml_dir).glob("*.kml"):
         (site_kml / kml.name).write_bytes(kml.read_bytes())
     print(f"Site data: {len(workouts)} workouts, routes {size / 1e6:.1f} MB -> {site_data_dir}")
-    return workouts, routes
 
 
 def export_all(stats_csv, tracks_dir, data_dir, site_data_dir=None):
@@ -310,5 +308,4 @@ def export_all(stats_csv, tracks_dir, data_dir, site_data_dir=None):
     print(f"KML: {len({r['year'] for r in mapped})} per-year files -> {kml_dir}")
 
     if site_data_dir:
-        return write_site_data(rows, track_features, kml_dir, Path(site_data_dir))
-    return None
+        write_site_data(rows, track_features, kml_dir, Path(site_data_dir))

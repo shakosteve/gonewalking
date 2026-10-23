@@ -193,8 +193,8 @@ def download_tracks(session, workouts, manifest, limit=None, delay=2.0):
 def process(force=False, fetch_places=False):
     tracks.process_all(STATS_CSV, TCX_DIR, TRACKS_DIR, force=force)
     found = places.update_places(TRACKS_DIR, DATA_DIR, PLACE_OVERRIDES, fetch_missing=fetch_places, links_path=PLACE_LINKS)
-    workouts, routes = exports.export_all(STATS_CSV, TRACKS_DIR, DATA_DIR, SITE_DATA_DIR)
-    previews.update_previews(workouts, routes, SITE_DIR, DATA_DIR)
+    exports.export_all(STATS_CSV, TRACKS_DIR, DATA_DIR, SITE_DATA_DIR)
+    previews.update_previews(SITE_DIR, DATA_DIR)
     return found
 
 
@@ -251,6 +251,7 @@ def main():
         clear = None if args.folders else folders
         photos.update_photos(folders, TRACKS_DIR, DATA_DIR, SITE_DIR, PHOTO_OVERRIDES, PHOTO_CONTENT,
                              sheets=args.sheets, review=args.review, clear_from=clear)
+        previews.update_previews(SITE_DIR, DATA_DIR)
         return
 
     load_env()

@@ -198,8 +198,11 @@ Social media link previews ignore everything after `#`, so those links all previ
 page. To share one walk, use its **Copy link to this walk** button (**Share this walk** on a
 phone), which gives `w/{workout_id}.html`: a page made by `process` (`previews.py`) with that
 walk's own title, stats and a 1200×630 picture of its route on an OpenStreetMap map, which sends
-visitors on to the walk on the dashboard. The map tiles are cached in `data/tile_cache/`, and a
-picture is only redrawn when its walk's route or text changes (`data/previews.json`); bump
+visitors on to the walk on the dashboard. Walks with photos split the picture: the map on the left
+and a contact sheet of up to 9 photos (spread along the walk, the last marked +N if there are
+more) on the right. Both `process` and `photos` bring the pages up to date. The map tiles are
+cached in `data/tile_cache/`, and a picture is only redrawn when its walk's route, text or photos
+change (`data/previews.json`); bump
 `STYLE_VERSION` in `previews.py` to redraw them all after changing how they look.
 
 ### Clean stats (`data/workouts_clean.csv`)
