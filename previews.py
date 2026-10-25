@@ -215,13 +215,17 @@ def site_info(index_html):
     return url.rstrip("/") + "/", html.unescape(name)
 
 
+def share_text(t, site_title, photo_count):
+    """The share page's title and description, as link previews show them."""
+    photos = f" · {photo_count} photo{'s' if photo_count != 1 else ''}" if photo_count else ""
+    return f"{t['title']} · {t['short_date']}", f"{t['stats']}{photos}. {t['long_date']}, on {site_title}."
+
+
 def share_page(w, t, base_url, site_title, has_image, photo_count):
     target = f"../#place={quote(t['place'], safe='')}&walk={w['id']}"
     page_url = f"{base_url}w/{w['id']}.html"
     image = f"{base_url}w/{w['id']}.jpg" if has_image else f"{base_url}images/share.jpg"
-    title = f"{t['title']} · {t['short_date']}"
-    photos = f" · {photo_count} photo{'s' if photo_count != 1 else ''}" if photo_count else ""
-    description = f"{t['stats']}{photos}. {t['long_date']}, on {site_title}."
+    title, description = share_text(t, site_title, photo_count)
     alt = f"Map of the route at {t['title']}{' and photos from the walk' if photo_count else ''}" if has_image else site_title
     e = lambda s: html.escape(s, quote=True)
     # No <meta http-equiv="refresh">: Facebook follows those and would preview the home page instead.

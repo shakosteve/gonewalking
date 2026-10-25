@@ -54,36 +54,40 @@ data/
 
 ## Scheduled updates
 
-`sync.bat` runs `sync` and then `photos` (when `PHOTOS_DIR` is set), logs everything to
-`data/logs/` (the newest 30 runs are kept) and shows a Windows notification saying how it went:
-any new walks, a failure and why (an expired MapMyFitness token is spelled out), or a warning when
-the token is within 14 days of expiring. Click the notification to open the log. It exits with an
-error code when a step fails, so Task Scheduler shows the run as failed too. The site files are
-updated; commit and push `docs/` to publish them.
+`sync.bat` runs `sync`, then `photos` when `PHOTOS_DIR` is set and there are new walks or photos
+waiting in the drop folder (photos added later for an older walk are picked up too). With
+`AUTO_PUBLISH=on` it then commits `docs/` and pushes it, so new walks and photos go live with nothing
+for you to do. Only `docs/` is committed, so code or CSV edits you're partway through stay out;
+commit those yourself. Everything is logged to `data/logs/` (the newest 30 runs are kept).
+
+It reports only when something happened: new walks or photos (published, or with the git commands
+to publish them when `AUTO_PUBLISH` is off), a failure and why (an expired MapMyFitness token is
+spelled out, and a failed push says how to finish by hand), or the token within 14 days of
+expiring. Quiet days send nothing. Reports go by e-mail (`REPORT_EMAIL`) and/or a Windows
+notification (click it to open the log). The run exits with an error code when a step fails, so
+Task Scheduler shows it as failed too.
 
 To schedule it: Task Scheduler → **Create Basic Task** → daily → **Start a program** →
-`C:\code\GoneWalking\sync.bat`. Keep **Run only when user is logged on** (the default): Windows only
-shows notifications in your own signed-in session, so pick a time you're usually at the PC. If the
-PC was off or asleep then, tick **Run task as soon as possible after a scheduled start is missed**
-(task properties → Settings).
+`C:\code\GoneWalking\sync.bat`. Windows notifications only show in your own signed-in session; with
+e-mail reports instead you can choose **Run whether user is logged on or not** (leave **Do not
+store password** unticked, or the push can't use your saved GitHub sign-in). If the PC was off or
+asleep at the scheduled time, tick **Run task as soon as possible after a scheduled start is
+missed** (task properties → Settings).
 
 Optional settings in `.env`:
 
 ```
 MMF_TOKEN_EXPIRES=2026-12-13        # the token's expiry date, for the warning
+AUTO_PUBLISH=on                     # commit and push new walks and photos (default off)
 REPORT_ON=always                    # or "failure" to hear only about problems (and expiry)
 WINDOWS_NOTIFY=off                  # no notification
 # REPORT_EMAIL=you@example.com      # also e-mail the report (needs SMTP_PASSWORD; see scheduled_sync.py)
 ```
 
-`python scheduled_sync.py --test` shows a test notification; `--dry-run` runs everything but prints
-the report instead; `--sample` sends the report as if your latest walk had just been downloaded,
-without syncing.
-
-Each report lists new walks with their stats and share links, gives the git commands to publish
-when there are uncommitted changes (`git add .`; `.gitignore` keeps out `.env`, `data/` and
-`photo_drop/`), and says when the MapMyFitness token expires, adding the
-steps to renew it once it's within 14 days of expiring or has been rejected.
+`python scheduled_sync.py --test` sends a test report; `--dry-run` runs the update but publishes
+nothing and prints the report instead of sending it (the HTML version is saved to
+`data/logs/report-preview.html`); `--sample` sends the report as if your latest walk had just been
+downloaded, without syncing.
 
 ## Places and regions
 
