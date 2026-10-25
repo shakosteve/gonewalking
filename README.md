@@ -23,6 +23,31 @@ To get the token: log in at https://www.mapmyfitness.com, open DevTools (F12) â†
 `auth-token`. The `auth-token-expiry` cookie shows when it expires (about 60 days); when it
 does, the tool stops with a message telling you to refresh it.
 
+### Keeping `data/` in OneDrive
+
+`data/` isn't in git, and parts of it are hard or impossible to recreate: the raw GPS downloads
+(`tcx/`, over 1 GB, slow to download again) and `photo_published.json`, the only record of which
+photos are published once their originals have left the drop folder. So it lives in OneDrive, in
+`GoneWalking_Data`, for an off-PC copy with version history. `data` in this folder is a Windows
+*junction* (a folder link) to it, so the code and the scheduled task use `data\` as usual and git
+still ignores it.
+
+On a new PC, install OneDrive, let `GoneWalking_Data` sync, then in PowerShell:
+
+```
+New-Item -ItemType Junction -Path C:\code\GoneWalking\data -Target "$env:OneDrive\GoneWalking_Data"
+attrib +P -U "$env:OneDrive\GoneWalking_Data" /S /D
+```
+
+The first line makes the link (there must be no `data` folder here yet). The second sets the
+folder to **Always keep on this device**, so OneDrive doesn't make the GPS files online-only;
+you can do the same by right-clicking the folder in File Explorer.
+
+To move an existing `data` folder into OneDrive: copy it with
+`robocopy C:\code\GoneWalking\data "$env:OneDrive\GoneWalking_Data" /E /COPY:DAT /DCOPY:DAT`,
+check both copies have the same number of files, rename `data` out of the way (keep it outside
+this folder, or `git add .` would pick it up), then run the two commands above.
+
 ## Usage
 
 ```
@@ -50,7 +75,8 @@ data/
   kml/{year}.kml      # the same, one file per year
 ```
 
-`process` (and therefore `sync`) rebuilds `tracks/`, `workouts_clean.csv` and `kml/`.
+`process` (and therefore `sync`) rebuilds `tracks/`, `workouts_clean.csv` and `kml/`. `data/` is
+a link to a OneDrive folder (see [Keeping `data/` in OneDrive](#keeping-data-in-onedrive)).
 
 ## Scheduled updates
 
