@@ -14,12 +14,15 @@ the task to "Run only when user is logged on". Optional settings in .env:
     SMTP_HOST=smtp.gmail.com         optional (default smtp.gmail.com)
     SMTP_PORT=587                    optional (default 587, STARTTLS)
 
-The report says whether it worked, lists new walks, and warns when the MapMyFitness token is
-within 14 days of expiring (from MMF_TOKEN_EXPIRES=YYYY-MM-DD, or "expires YYYY-MM-DD" in .env).
+The report says whether it worked, lists new walks with their stats and share links, gives the git
+commands to publish when there are uncommitted changes, and says when the MapMyFitness token expires
+(from MMF_TOKEN_EXPIRES=YYYY-MM-DD, or "expires YYYY-MM-DD" in .env), with the steps to renew it once
+it's within 14 days of expiring or has been rejected.
 
     python scheduled_sync.py            run it
     python scheduled_sync.py --dry-run  run it, but print the report instead of sending it
     python scheduled_sync.py --test     just show a test notification
+    python scheduled_sync.py --sample   send the report as if the latest walk were new (no sync)
 """
 
 import json
@@ -34,10 +37,14 @@ from email.message import EmailMessage
 from pathlib import Path
 from xml.sax.saxutils import escape, quoteattr
 
+import exports
+
 ROOT = Path(__file__).resolve().parent
 ENV = ROOT / ".env"
 LOG_DIR = ROOT / "data" / "logs"
 PLACES = ROOT / "data" / "places.json"
+WORKOUTS_JS = ROOT / "docs" / "data" / "workouts.js"
+INDEX_HTML = ROOT / "docs" / "index.html"
 KEEP_LOGS = 30
 STEP_TIMEOUT_S = 3 * 3600
 TOKEN_WARN_DAYS = 14
@@ -69,6 +76,69 @@ def known_walks():
         return json.loads(PLACES.read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return {}
+
+
+def site_walks():
+    """The published walks by ID, for stats in the report."""
+    try:
+        text = WORKOUTS_JS.read_text(encoding="utf-8")
+        return {w["id"]: w for w in json.loads(text[text.index("=") + 1:].strip().rstrip(";"))["workouts"]}
+    except (OSError, ValueError, KeyError):
+        return {}
+
+
+def site_url():
+    """The dashboard's address, from the home page's og:url tag."""
+    try:
+        m = re.search(r'<meta property="og:url" content="([^"]+)"', INDEX_HTML.read_text(encoding="utf-8"))
+        return m.group(1).rstrip("/") + "/" if m else None
+    except OSError:
+        return None
+
+
+def unpublished_changes():
+    """Changed files that haven't been committed (git status lines), or None if git isn't usable.
+    .gitignore keeps out .env, data/ and photo_drop/, so these are the files that belong on GitHub."""
+    try:
+        proc = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT,
+                              capture_output=True, text=True, timeout=60)
+        return [l for l in proc.stdout.splitlines() if l.strip()] if proc.returncode == 0 else None
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+
+
+TOKEN_STEPS = """To renew the MapMyFitness token:
+  1. Log in at https://www.mapmyfitness.com and open DevTools (F12).
+  2. Application > Cookies > https://www.mapmyfitness.com: copy the value of auth-token.
+  3. In C:\\code\\GoneWalking\\.env, paste it after MMF_AUTH_TOKEN=
+  4. Copy the date from the auth-token-expiry cookie into .env's "This token expires YYYY-MM-DD" line,
+     so these reports know the new date.
+  5. Check it works: python gonewalking.py stats"""
+
+
+def publish_steps(changed, latest_day):
+    message = f"Walks through {latest_day}" if latest_day else "Update site data"
+    count = f" ({len(changed)} changed file{'s' if len(changed) != 1 else ''})" if changed else ""
+    return (f"To publish to the site{count}, in a terminal:\n"
+            "  cd C:\\code\\GoneWalking\n"
+            "  git add .\n"
+            f'  git commit -m "{message}"\n'
+            "  git push\n"
+            "GitHub Pages republishes within a minute or two.")
+
+
+def walk_lines(p, w, base_url):
+    """One new walk for the report: where, stats and its share link."""
+    where = " · ".join(x for x in (p.get("place") or p.get("city"), p.get("place_detail")) if x) or "Unknown place"
+    lines = [f"  {p.get('date')}  {p.get('activity', 'Walk')} at {where}"]
+    if w:
+        kind = "walk" if w["activity"] == "Walk" else "ride"
+        stats = [f"{w['mi']:.2f} mi {kind}", exports.format_duration(w["dur"]), exports.format_pace(w["pace"]),
+                 f"{w['ft']:,} ft climbing" if w.get("ft") else "", f"{w['steps']:,} steps" if w.get("steps") else ""]
+        lines.append("    " + " · ".join(s for s in stats if s))
+        if base_url:
+            lines.append(f"    Share: {base_url}w/{w['id']}.html")
+    return lines
 
 
 def run_step(args, log):
@@ -165,11 +235,77 @@ def notify(subject, body, failed, log_path, dry_run):
     return "; ".join(results) or "WINDOWS_NOTIFY=off and no REPORT_EMAIL, so no report sent"
 
 
+def build_report(new, steps, failures, log_path, sample=False):
+    """The report's subject and body, and the days left on the token (None if its expiry isn't known).
+    A sample shows the publish and token-renewal steps even when they aren't needed yet."""
+    expiry = token_expiry()
+    days_left = (expiry - date.today()).days if expiry else None
+    token_soon = days_left is not None and days_left <= TOKEN_WARN_DAYS
+    auth_failed = False
+
+    report = []
+    if failures:
+        report.append("The update FAILED.")
+        for name, lines in failures:
+            auth = any("auth-token" in l or "expired" in l.lower() or "401" in l for l in lines)
+            auth_failed |= auth
+            report.append(f"\n{name}: " + ("the MapMyFitness login token has expired or was rejected (renewal "
+                                           "steps below)." if auth else "it stopped with an error."))
+            report.append("Last lines:\n  " + "\n  ".join(lines[-15:] or ["(no output)"]))
+    else:
+        report.append("The update worked.")
+    if new:
+        walks, base_url = site_walks(), site_url()
+        report.append(f"\n{len(new)} new {'walk' if len(new) == 1 else 'walks'}:")
+        for p in new:
+            report.extend(walk_lines(p, walks.get(p["id"]), base_url))
+    elif not failures:
+        report.append("\nNo new walks since the last run.")
+    for name, ok, lines in steps:
+        summary = next((l for l in reversed(lines) if l.startswith(("Photos:", "Places:", "Site data:"))), None)
+        if ok and name == "photos" and summary:
+            report.append(f"\n{summary.strip()}")
+    changed = unpublished_changes()
+    if changed or sample:
+        report.append("\n" + publish_steps(changed, new[-1].get("date") if new else None))
+
+    if expiry is None:
+        report.append("\nMapMyFitness token: expiry date unknown (add \"This token expires YYYY-MM-DD\" to .env).")
+    elif days_left < 0:
+        report.append(f"\nMapMyFitness token: EXPIRED on {expiry} ({-days_left} days ago).")
+    else:
+        report.append(f"\nMapMyFitness token: expires {expiry} (in {days_left} day{'s' if days_left != 1 else ''})"
+                      + (" - renew it soon." if token_soon else "."))
+    if token_soon or auth_failed or sample:
+        report.append(TOKEN_STEPS)
+    if log_path:
+        report.append(f"\nFull log: {log_path}")
+    body = "\n".join(report)
+
+    if new and not failures:
+        subject = f"GoneWalking: {len(new)} new {'walk' if len(new) == 1 else 'walks'}"
+    elif failures:
+        subject = f"GoneWalking update FAILED ({', '.join(n for n, _ in failures)})"
+    else:
+        subject = "GoneWalking: no new walks"
+    if token_soon and not failures:
+        subject += " · token expires soon"
+    return subject, body, days_left
+
+
 def main():
     dry_run = "--dry-run" in sys.argv
     load_env()
     if "--test" in sys.argv:
         print(notify("GoneWalking: test", "If you can read this, scheduled reports will reach you.", False, None, dry_run))
+        return
+    if "--sample" in sys.argv:
+        # The report as it would read if the latest walk had just been downloaded; nothing is synced.
+        walks = known_walks()
+        latest = max(walks, key=lambda k: walks[k].get("date", ""), default=None)
+        new = [dict(walks[latest], id=latest)] if latest else []
+        subject, body, _ = build_report(new, [], [], None, sample=True)
+        print(notify(f"[Sample] {subject}", body, False, None, dry_run))
         return
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now()
@@ -189,47 +325,8 @@ def main():
                     break  # nothing new to do photos for
 
     after = known_walks()
-    new = sorted((p for k, p in after.items() if k not in before), key=lambda p: p.get("date", ""))
-    expiry = token_expiry()
-    days_left = (expiry - date.today()).days if expiry else None
-
-    report = []
-    if failures:
-        report.append("The update FAILED.")
-        for name, lines in failures:
-            auth = any("auth-token" in l or "expired" in l.lower() or "401" in l for l in lines)
-            report.append(f"\n{name}: " + ("the MapMyFitness login token has expired or was rejected. Copy a fresh "
-                                           "auth-token cookie into .env (see README, Setup)." if auth else "it stopped with an error."))
-            report.append("Last lines:\n  " + "\n  ".join(lines[-15:] or ["(no output)"]))
-    else:
-        report.append("The update worked.")
-    if new:
-        report.append(f"\n{len(new)} new {'walk' if len(new) == 1 else 'walks'}:")
-        for p in new:
-            where = " · ".join(x for x in (p.get("place"), p.get("place_detail")) if x)
-            report.append(f"  {p.get('date')}  {p.get('activity', 'Walk')}  {where}")
-        report.append("\nThe site files are updated. Commit and push docs/ to publish them.")
-    elif not failures:
-        report.append("\nNo new walks since the last run.")
-    for name, ok, lines in steps:
-        summary = next((l for l in reversed(lines) if l.startswith(("Photos:", "Places:", "Site data:"))), None)
-        if ok and name == "photos" and summary:
-            report.append(f"\n{summary.strip()}")
-    if days_left is not None and days_left <= TOKEN_WARN_DAYS:
-        report.append(f"\nHeads up: the MapMyFitness token {'expired' if days_left < 0 else 'expires'} on {expiry} "
-                      f"({'%d days ago' % -days_left if days_left < 0 else 'in %d days' % days_left}). "
-                      "Copy a fresh auth-token cookie into .env and update the date.")
-    report.append(f"\nFull log: {log_path}")
-    body = "\n".join(report)
-
-    if new and not failures:
-        subject = f"GoneWalking: {len(new)} new {'walk' if len(new) == 1 else 'walks'}"
-    elif failures:
-        subject = f"GoneWalking update FAILED ({', '.join(n for n, _ in failures)})"
-    else:
-        subject = "GoneWalking: no new walks"
-    if days_left is not None and days_left <= TOKEN_WARN_DAYS and not failures:
-        subject += " · token expires soon"
+    new = sorted((dict(p, id=k) for k, p in after.items() if k not in before), key=lambda p: p.get("date", ""))
+    subject, body, days_left = build_report(new, steps, failures, log_path)
 
     want = os.environ.get("REPORT_ON", "always").strip().lower()
     if failures or want != "failure" or (days_left is not None and days_left <= TOKEN_WARN_DAYS):

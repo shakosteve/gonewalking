@@ -77,7 +77,13 @@ WINDOWS_NOTIFY=off                  # no notification
 ```
 
 `python scheduled_sync.py --test` shows a test notification; `--dry-run` runs everything but prints
-the report instead.
+the report instead; `--sample` sends the report as if your latest walk had just been downloaded,
+without syncing.
+
+Each report lists new walks with their stats and share links, gives the git commands to publish
+when there are uncommitted changes (`git add .`; `.gitignore` keeps out `.env`, `data/` and
+`photo_drop/`), and says when the MapMyFitness token expires, adding the
+steps to renew it once it's within 14 days of expiring or has been rejected.
 
 ## Places and regions
 
