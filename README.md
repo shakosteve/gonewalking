@@ -48,6 +48,15 @@ To move an existing `data` folder into OneDrive: copy it with
 check both copies have the same number of files, rename `data` out of the way (keep it outside
 this folder, or `git add .` would pick it up), then run the two commands above.
 
+`photo_drop` is a junction too, to the OneDrive folder `GoneWalking_PhotoDrop`, so walk photos can
+be sent straight from the phone: in Google Photos, select them, **Share → OneDrive**, and upload to
+that folder (the location in each photo comes through). On a new PC:
+
+```
+New-Item -ItemType Junction -Path C:\code\GoneWalking\photo_drop -Target "$env:OneDrive\GoneWalking_PhotoDrop"
+attrib +P -U "$env:OneDrive\GoneWalking_PhotoDrop" /S /D
+```
+
 ## Usage
 
 ```
