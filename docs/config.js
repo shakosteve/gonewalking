@@ -6,7 +6,7 @@ window.GW_CONFIG = {
   season: "auto",
   // Used as the portrait's description, and shown under the title if the title doesn't
   // already include your first name.
-  ownerName: "Steve Schroeder",
+  ownerName: "Steve",
   // Used to show your age alongside the trends (YYYY-MM-DD). Leave empty to hide age.
   birthDate: "1970-04-03",
   // Where you lived, oldest first. Each home starts on its "from" date (YYYY-MM-DD) and lasts
