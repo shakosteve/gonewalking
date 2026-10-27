@@ -159,6 +159,10 @@ album on each walk. Photos not taken during a walk (or within 10 minutes of one)
 
 90% and up is published; 50–90% is held for your review and not published; below that is left off.
 
+Pausing MapMyWalk leaves the pause out of the track, so after a pause the track runs behind the
+clock. A photo that isn't on the track at its own time is also looked for up to 30 minutes earlier
+on the track, and placed there if it's found.
+
 **Near-duplicates.** Photos on the same walk taken within 60 seconds of each other, framed the
 same way (both portrait or both landscape) and nearly identical are grouped, and only the
 sharpest of each group is published. The others appear under "Near-duplicates" on the review

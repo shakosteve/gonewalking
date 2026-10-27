@@ -2,7 +2,9 @@
 
 Each photo taken during a walk (or up to MARGIN before or after) near the walk's GPS track gets a
 certainty score, from how close it was to the track at the time, whether it was during the walk,
-how its time and location were recorded, and (once checked) what the photo shows:
+how its time and location were recorded, and (once checked) what the photo shows. Pausing the
+tracker leaves the pause out of the track, so a photo is also looked for up to MAX_PAUSE_S earlier
+on the track than its time says:
 
   PUBLISH_AT and up     published on the walk's album
   REVIEW_AT and up      held for your review, not published
@@ -56,6 +58,8 @@ warnings.filterwarnings("ignore", "Corrupt EXIF", UserWarning)
 PHOTO_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 MARGIN = timedelta(minutes=10)
 NEAR_S = 300            # compare the photo with the track within 5 minutes of when it was taken
+MAX_PAUSE_S = 1800      # pausing the tracker leaves the pause out of the track, so later points run
+                        # up to this far behind the clock
 MAX_DISTANCE_M = 300    # farther than this from the track: not a candidate
 PUBLISH_AT = 0.90
 REVIEW_AT = 0.50
@@ -230,7 +234,8 @@ def match(photo, walks):
     """(walk, seconds into the walk, metres from the track or None, reason)."""
     if photo["taken"] is None:
         return None, None, None, "no date"
-    during = [w for w in walks if w["start"] - MARGIN <= photo["taken"] <= w["end"] + MARGIN]
+    during = [w for w in walks
+              if w["start"] - MARGIN <= photo["taken"] <= w["end"] + MARGIN + timedelta(seconds=MAX_PAUSE_S)]
     if not during:
         return None, None, None, "not during a walk"
     if photo["latlon"] is None:
@@ -246,9 +251,19 @@ def match(photo, walks):
         near = [(km(photo["latlon"], ll) * 1000, t) for ll, t in w["points"] if abs(t - at) <= NEAR_S]
         if not near:  # just before the start or after the end: compare with the nearest end of the track
             near = [(km(photo["latlon"], ll) * 1000, t) for ll, t in (w["points"][0], w["points"][-1])]
-        dist = min(near)[0]
+        dist, when = min(near)[0], at
+        if dist > 30:
+            # A paused tracker leaves the pause out of the track, so after it the track runs behind
+            # the clock: look for the photo up to MAX_PAUSE_S earlier on the track, and if it's there,
+            # place it at that point. Not at the track's very end, where a photo taken after the
+            # walk would look the same.
+            last = (w["end"] - w["start"]).total_seconds() - NEAR_S
+            lag = [(km(photo["latlon"], ll) * 1000, t) for ll, t in w["points"]
+                   if at - MAX_PAUSE_S <= t < min(at - NEAR_S, last)]
+            if lag and min(lag)[0] < dist:
+                dist, when = min(lag)
         if best is None or dist < best[2]:
-            best = (w, round(at), dist)
+            best = (w, round(when), dist)
     if best is None or best[2] > MAX_DISTANCE_M:
         return None, None, best[2] if best else None, "far from the track"
     return best[0], best[1], best[2], "near the track"
