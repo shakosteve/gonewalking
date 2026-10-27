@@ -1,33 +1,35 @@
 :root {
   color-scheme: light;
-  --page: #f9f9f7;
-  --surface: #fcfcfb;
-  --text-primary: #0b0b0b;
-  --text-secondary: #52514e;
-  --text-muted: #898781;
-  --grid: #e1e0d9;
-  --axis: #c3c2b7;
-  --border: rgba(11, 11, 11, 0.10);
-  --hover-wash: rgba(11, 11, 11, 0.04);
-  --series-1: #2a78d6;
-  --series-2: #eb6834;
-  --series-3: #1baf7a;
-  --series-4: #eda100;
-  --deemph: #c3c2b7;
-  --badge: #f0efec;
+  /* Warm gray page, cream cards, soft ink. Chart colors were checked with the dataviz palette
+     validator against the cream surface. */
+  --page: #ece8df;
+  --surface: #f6f3ec;
+  --text-primary: #23211d;
+  --text-secondary: #55514a;
+  --text-muted: #6b665c;
+  --grid: #dcd6ca;
+  --axis: #bdb6a7;
+  --border: rgba(60, 48, 28, 0.13);
+  --hover-wash: rgba(60, 48, 28, 0.05);
+  --series-1: #2667c0;
+  --series-2: #cc5626;
+  --series-3: #178f63;
+  --series-4: #a87400;
+  --deemph: #c4bdae;
+  --badge: #e9e4d8;
   --good: #006300;
   --bad: #b02a2a;
   /* sequential blue: slow -> fast, low -> high */
-  --seq-1: #86b6ef;
-  --seq-2: #5598e7;
-  --seq-3: #2a78d6;
-  --seq-4: #1c5cab;
-  --seq-5: #104281;
-  --cal-0: #ecebe6;
-  --cal-1: #b7d3f6;
-  --cal-2: #6da7ec;
-  --cal-3: #2a78d6;
-  --cal-4: #104281;
+  --seq-1: #8db1e4;
+  --seq-2: #5a8fd6;
+  --seq-3: #2667c0;
+  --seq-4: #1c519a;
+  --seq-5: #123a70;
+  --cal-0: #e3ded2;
+  --cal-1: #b5cbec;
+  --cal-2: #6f9bd6;
+  --cal-3: #2667c0;
+  --cal-4: #123a70;
   --font: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
@@ -342,7 +344,9 @@ h2 { margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: c
 .leaflet-container { font-family: var(--font); }
 .map-view-toggle { box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2); }
 .map-view-toggle button { font-size: 13px; }
-/* OpenStreetMap has no dark tiles; darken the light ones in dark mode. */
+/* Warm the bright white tiles toward the cream cards in light mode. OpenStreetMap has no dark
+   tiles; darken the light ones in dark mode (these rules are more specific, so they win there). */
+.leaflet-tile-pane { filter: sepia(0.15) saturate(0.9) brightness(0.96); }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .leaflet-tile-pane { filter: var(--tile-filter, invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9)); }
 }
