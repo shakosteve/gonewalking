@@ -2,7 +2,8 @@
 window.GW_CONFIG = {
   // The site's title, shown in the header and the browser tab.
   siteTitle: "Steve's Gone Walking",
-  // Dark mode's colors follow the season ("auto"), or pin one: "autumn", or "none" for plain dark.
+  // Dark mode's colors follow the season ("auto"), or pin one: "winter", "spring", "summer",
+  // "autumn", or "none" for plain dark.
   season: "auto",
   // Used as the portrait's description, and shown under the title if the title doesn't
   // already include your first name.

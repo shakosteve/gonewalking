@@ -580,9 +580,10 @@ code { font-size: 12px; background: var(--page); border: 1px solid var(--border)
 @media (prefers-reduced-motion: reduce) { .collapse-toggle::before { transition: none; } }
 
 /* ---------- Seasonal dark mode ----------
-   The page sets data-season on <html> from today's date (see index.html). A season's block
-   below re-colors dark mode only; seasons without a block use the standard dark colors.
-   Chart colors were checked with the dataviz palette validator against the season's surface. */
+   The page sets data-season on <html> from today's date (see index.html): winter Dec–Feb,
+   spring Mar–May, summer Jun–Aug, autumn Sep–Nov. A season's block below re-colors dark mode
+   only. Chart colors were checked with the dataviz palette validator against the season's
+   surface; series-2 is the highlight and carries white badge text, so it stays at 3:1 or more. */
 @media (prefers-color-scheme: dark) {
   :root[data-season="autumn"]:not([data-theme="light"]) {
     --page: #15100c;
@@ -644,6 +645,191 @@ code { font-size: 12px; background: var(--page); border: 1px solid var(--border)
   --cal-3: #d06e2e;
   --cal-4: #f4b886;
   --tile-filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) sepia(0.35);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-season="winter"]:not([data-theme="light"]) {
+    --page: #0c1117;
+    --surface: #141a22;
+    --text-primary: #e9eef5;
+    --text-secondary: #bcc7d4;
+    --text-muted: #8a97a8;
+    --grid: #232c38;
+    --axis: #354152;
+    --border: rgba(205, 225, 255, 0.12);
+    --hover-wash: rgba(170, 205, 255, 0.07);
+    --badge: #e3e9f1;
+    --deemph: #3e4958;
+    --series-1: #4a90d9;   /* ice */
+    --series-2: #cf5b62;   /* holly */
+    --series-3: #9b82dc;   /* frost */
+    --series-4: #2f9f86;   /* spruce */
+    --good: #7fbf5a;
+    --bad: #e8806e;
+    --seq-1: #1a4a7a;
+    --seq-2: #2a64a0;
+    --seq-3: #3f82c4;
+    --seq-4: #6aa6dc;
+    --seq-5: #a3cbee;
+    --cal-0: #1e2632;
+    --cal-1: #1a4370;
+    --cal-2: #2a64a0;
+    --cal-3: #4589cc;
+    --cal-4: #a3cbee;
+    --tile-filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.55);
+  }
+}
+:root[data-season="winter"][data-theme="dark"] {
+  --page: #0c1117;
+  --surface: #141a22;
+  --text-primary: #e9eef5;
+  --text-secondary: #bcc7d4;
+  --text-muted: #8a97a8;
+  --grid: #232c38;
+  --axis: #354152;
+  --border: rgba(205, 225, 255, 0.12);
+  --hover-wash: rgba(170, 205, 255, 0.07);
+  --badge: #e3e9f1;
+  --deemph: #3e4958;
+  --series-1: #4a90d9;
+  --series-2: #cf5b62;
+  --series-3: #9b82dc;
+  --series-4: #2f9f86;
+  --good: #7fbf5a;
+  --bad: #e8806e;
+  --seq-1: #1a4a7a;
+  --seq-2: #2a64a0;
+  --seq-3: #3f82c4;
+  --seq-4: #6aa6dc;
+  --seq-5: #a3cbee;
+  --cal-0: #1e2632;
+  --cal-1: #1a4370;
+  --cal-2: #2a64a0;
+  --cal-3: #4589cc;
+  --cal-4: #a3cbee;
+  --tile-filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.55);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-season="spring"]:not([data-theme="light"]) {
+    --page: #0e130e;
+    --surface: #161d16;
+    --text-primary: #edf3e9;
+    --text-secondary: #c3cfba;
+    --text-muted: #8f9c87;
+    --grid: #253025;
+    --axis: #384538;
+    --border: rgba(220, 255, 205, 0.11);
+    --hover-wash: rgba(190, 240, 170, 0.07);
+    --badge: #e5ede0;
+    --deemph: #424e41;
+    --series-1: #58a63a;   /* new leaf */
+    --series-2: #d0628e;   /* blossom */
+    --series-3: #a68a16;   /* daffodil */
+    --series-4: #7a87e0;   /* lilac */
+    --good: #7fbf5a;
+    --bad: #e8806e;
+    --seq-1: #24521e;
+    --seq-2: #34702a;
+    --seq-3: #4b8f38;
+    --seq-4: #72b257;
+    --seq-5: #a8d48e;
+    --cal-0: #1f2a1f;
+    --cal-1: #22501c;
+    --cal-2: #34702a;
+    --cal-3: #4f9539;
+    --cal-4: #a8d48e;
+  }
+}
+:root[data-season="spring"][data-theme="dark"] {
+  --page: #0e130e;
+  --surface: #161d16;
+  --text-primary: #edf3e9;
+  --text-secondary: #c3cfba;
+  --text-muted: #8f9c87;
+  --grid: #253025;
+  --axis: #384538;
+  --border: rgba(220, 255, 205, 0.11);
+  --hover-wash: rgba(190, 240, 170, 0.07);
+  --badge: #e5ede0;
+  --deemph: #424e41;
+  --series-1: #58a63a;
+  --series-2: #d0628e;
+  --series-3: #a68a16;
+  --series-4: #7a87e0;
+  --good: #7fbf5a;
+  --bad: #e8806e;
+  --seq-1: #24521e;
+  --seq-2: #34702a;
+  --seq-3: #4b8f38;
+  --seq-4: #72b257;
+  --seq-5: #a8d48e;
+  --cal-0: #1f2a1f;
+  --cal-1: #22501c;
+  --cal-2: #34702a;
+  --cal-3: #4f9539;
+  --cal-4: #a8d48e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-season="summer"]:not([data-theme="light"]) {
+    --page: #0b1214;
+    --surface: #121b1e;
+    --text-primary: #e8f2f2;
+    --text-secondary: #bccdcf;
+    --text-muted: #879a9d;
+    --grid: #1f2c30;
+    --axis: #304145;
+    --border: rgba(200, 245, 250, 0.11);
+    --hover-wash: rgba(160, 230, 240, 0.07);
+    --badge: #e1ecec;
+    --deemph: #3a4a4e;
+    --series-1: #2a9db6;   /* lake */
+    --series-2: #dc6a3f;   /* sunset */
+    --series-3: #b05aa6;   /* coneflower */
+    --series-4: #a6880c;   /* sunflower */
+    --good: #7fbf5a;
+    --bad: #e8806e;
+    --seq-1: #0f4f5c;
+    --seq-2: #16707f;
+    --seq-3: #2191a4;
+    --seq-4: #4bb4c6;
+    --seq-5: #8fd3df;
+    --cal-0: #1b2729;
+    --cal-1: #0f4b57;
+    --cal-2: #16707f;
+    --cal-3: #2496aa;
+    --cal-4: #8fd3df;
+  }
+}
+:root[data-season="summer"][data-theme="dark"] {
+  --page: #0b1214;
+  --surface: #121b1e;
+  --text-primary: #e8f2f2;
+  --text-secondary: #bccdcf;
+  --text-muted: #879a9d;
+  --grid: #1f2c30;
+  --axis: #304145;
+  --border: rgba(200, 245, 250, 0.11);
+  --hover-wash: rgba(160, 230, 240, 0.07);
+  --badge: #e1ecec;
+  --deemph: #3a4a4e;
+  --series-1: #2a9db6;
+  --series-2: #dc6a3f;
+  --series-3: #b05aa6;
+  --series-4: #a6880c;
+  --good: #7fbf5a;
+  --bad: #e8806e;
+  --seq-1: #0f4f5c;
+  --seq-2: #16707f;
+  --seq-3: #2191a4;
+  --seq-4: #4bb4c6;
+  --seq-5: #8fd3df;
+  --cal-0: #1b2729;
+  --cal-1: #0f4b57;
+  --cal-2: #16707f;
+  --cal-3: #2496aa;
+  --cal-4: #8fd3df;
 }
 
 /* ---------- Photos ---------- */
