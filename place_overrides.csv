@@ -74,7 +74,7 @@ Baylor Regional Park,park,44.81421,-93.94335,500,,1,2024-08-16,"Camden Township,
 Elm Creek Park Reserve,park,45.15379,-93.44181,500,,1,2024-08-24,"Dayton, Minnesota","https://www.google.com/maps/search/?api=1&query=45.15379,-93.44181"
 Murphy-Hanrehan Park Reserve,park,44.70643,-93.33828,500,,1,2024-10-28,"Credit River, Minnesota","https://www.google.com/maps/search/?api=1&query=44.70643,-93.33828"
 Ney Nature Center,park,44.53603,-93.87354,500,,1,2025-05-24,"Tyrone Township, Minnesota","https://www.google.com/maps/search/?api=1&query=44.53603,-93.87354"
-SW Regional LRT - North Corridor and South Corridor,park,44.80712,-93.57346,500,,1,2025-07-01,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.80712,-93.57346"
+Chaska Trails,park,44.80712,-93.57346,500,,1,2025-07-01,"Chaska, Minnesota","https://www.google.com/maps/search/?api=1&query=44.80712,-93.57346"
 Goodhue Pioneer State Trail,trail,44.5354,-92.56497,500,,1,2025-08-02,"Featherstone Township, Minnesota","https://www.google.com/maps/search/?api=1&query=44.53540,-92.56497"
 Deans Lake Trail,trail,44.7795,-93.45284,500,,1,2026-04-05,"Shakopee, Minnesota","https://www.google.com/maps/search/?api=1&query=44.77950,-93.45284"
 The Ponds,park,44.70304,-93.41673,500,,1,2026-05-09,"Prior Lake, Minnesota","https://www.google.com/maps/search/?api=1&query=44.70304,-93.41673"
@@ -240,3 +240,6 @@ Dundas,park,,,,8609554797,1,2025-06-07,"Dundas, Minnesota",
 East River Trail / Mill Towns State Trail,trail,,,,8609554797,1,2025-06-07,"Dundas, Minnesota",
 Dundas,park,,,,8803561753,1,2026-05-23,"Dundas, Minnesota",
 East River Trail / Mill Towns State Trail,trail,,,,8803561753,1,2026-05-23,"Dundas, Minnesota",
+Minnesota River Bluffs LRT Regional Trail,trail,,,,8027589451,1,2024-07-03,"Chaska, Minnesota",
+Minnesota River Bluffs LRT Regional Trail,trail,,,,8188818967,1,2024-09-27,"Chaska, Minnesota",
+Minnesota River Bluffs LRT Regional Trail,trail,,,,8624589987,1,2025-07-01,"Chaska, Minnesota",
