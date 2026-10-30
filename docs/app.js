@@ -1817,11 +1817,12 @@
   }
 
   // ---------- latest walk ----------
-  /** One line above the summary about the most recent walk or ride; click it to open that walk. */
+  /** One line above the summary about the most recent walk or ride, while it's new (last 3 days); click it to open that walk. */
   function renderLatest() {
     const box = $("latest");
     const w = workouts.slice().sort((a, b) => (b.start || b.date).localeCompare(a.start || a.date))[0];
-    if (!w) { box.hidden = true; return; }
+    box.hidden = !w || !isNew(w);
+    if (box.hidden) return;
     const who = (CONFIG.ownerName || "").split(" ")[0] || "I";
     const verb = w.activity === "Walk" ? "walked" : "rode";
     const sameYear = w.year === new Date().getFullYear();

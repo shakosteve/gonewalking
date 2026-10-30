@@ -218,6 +218,7 @@ h2 { margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: c
 
 /* Latest walk */
 .latest { margin: 0 0 12px; font-size: 15px; color: var(--text-secondary); display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.latest[hidden] { display: none; }
 .latest .latest-link { font-size: 15px; color: var(--text-primary); text-align: left; padding: 0; }
 .latest .latest-link:hover { color: var(--series-1); }
 .latest .new-badge, .latest .camera-badge { margin-left: 0; }
