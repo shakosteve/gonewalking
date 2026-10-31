@@ -1551,8 +1551,16 @@
         : `No ${info.nouns} here in this selection.` }),
       el("p", { class: "placeholder small", text: `Pick a ${info.noun} to see its route and details.` }),
       el("ol", { class: "walk-list" }, items),
-      el("button", { type: "button", class: "link-button", text: "Show all places", onclick: () => setPlace("all") }));
+      el("div", { class: "links" }, [
+        el("button", { type: "button", class: "link-button", text: shareLabel("place"),
+          onclick: (e) => sharePage(`p/${placeSlug(state.place)}.html`, state.place, "place", e.currentTarget) }),
+        el("button", { type: "button", class: "link-button", text: "Show all places", onclick: () => setPlace("all") }),
+      ]));
   }
+
+  /** A place's share page name (p/<slug>.html), the same as previews.py's place_slug(). */
+  const placeSlug = (name) => name.normalize("NFKD").replace(/[^\x00-\x7f]/g, "").toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "place";
 
   /** From a walk on the overview, a link to every walk at its place (in the current filters). Back returns to the walk. */
   function placeLink(w) {
@@ -1638,7 +1646,8 @@
             el("a", { href: w.link.replace("http://", "https://"), target: "_blank", rel: "noopener", text: "View on MapMyWalk ↗" }),
             w.latlon ? el("a", { href: `https://www.google.com/maps/search/?api=1&query=${w.latlon[0]},${w.latlon[1]}`, target: "_blank", rel: "noopener", text: "Start point in Google Maps ↗" }) : null,
             el("a", { href: kmlUrl, download: `${w.date}-${w.id}.kml`, text: "Download this route (KML)" }),
-            el("button", { type: "button", class: "link-button", text: shareLabel(), onclick: (e) => shareWalk(w, e.currentTarget) }),
+            el("button", { type: "button", class: "link-button", text: shareLabel("walk"),
+          onclick: (e) => sharePage(`w/${w.id}.html`, `${withDetail(w)} · ${fmtDate(w.day)}`, "walk", e.currentTarget) }),
             state.place === "all" ? el("button", { type: "button", class: "link-button", text: "Clear selection", onclick: () => clearSelection() }) : null,
           ]),
         ] },
@@ -1683,13 +1692,14 @@
 
   /** Phones get their share sheet; elsewhere the link is copied. */
   const useShareSheet = () => Boolean(navigator.share) && matchMedia("(pointer: coarse)").matches;
-  const shareLabel = () => (useShareSheet() ? "Share this walk" : "Copy link to this walk");
+  const shareLabel = (what) => (useShareSheet() ? `Share this ${what}` : `Copy link to this ${what}`);
 
-  /** The walk's own share page (docs/w/<id>.html), whose link preview shows this walk, not the home page. */
-  async function shareWalk(w, button) {
-    const url = new URL(`w/${w.id}.html`, location.href).href;
+  /** A walk's or place's own share page (w/<id>.html, p/<slug>.html, made by previews.py), whose link
+   *  preview shows that walk or place, not the home page. */
+  async function sharePage(path, title, what, button) {
+    const url = new URL(path, location.href).href;
     if (useShareSheet()) {
-      try { await navigator.share({ title: `${withDetail(w)} · ${fmtDate(w.day)}`, url }); } catch (e) { /* closed without sharing */ }
+      try { await navigator.share({ title, url }); } catch (e) { /* closed without sharing */ }
       return;
     }
     try {
@@ -1699,7 +1709,7 @@
       return;
     }
     button.textContent = "Link copied";
-    setTimeout(() => { button.textContent = shareLabel(); }, 2000);
+    setTimeout(() => { button.textContent = shareLabel(what); }, 2000);
   }
 
   // ---------- photos ----------
@@ -2100,13 +2110,15 @@
   initAlbum();
   renderAll();
   renderLatest();
-  function readHash() {
+  function readHash(opening) {
     const q = new URLSearchParams(location.hash.slice(1));
     const place = q.get("place") || "all";
     const walk = workouts.find((w) => w.id === q.get("walk"));
     if (place !== state.place) {
       state.place = place;
       state.selected = null;
+      // A shared place link counts its rides too, so show them all when the page opens on one.
+      if (opening && state.activity !== "all" && workouts.some((w) => placeName(w) === place && w.activity !== state.activity)) state.activity = "all";
       renderAll();
     }
     if (walk) {
@@ -2117,8 +2129,8 @@
       renderMap(true); renderDetail(); renderLog();
     }
   }
-  window.addEventListener("popstate", readHash);
-  readHash();
+  window.addEventListener("popstate", () => readHash(false));
+  readHash(true);
   $("updated").textContent = `Data updated ${fmtDate(new Date(DATA.meta.updated), { month: "long", day: "numeric", year: "numeric" })}.`;
 
   let resizeTimer;

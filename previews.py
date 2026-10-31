@@ -18,6 +18,7 @@ import json
 import math
 import re
 import time
+import unicodedata
 from datetime import date
 from pathlib import Path
 from urllib.parse import quote
@@ -86,8 +87,9 @@ class Tiles:
         return Image.open(path).convert("RGB")
 
 
-def draw_map(segments, tiles, map_w=WIDTH):
-    """The route on map tiles, fitted into the left map_w pixels of the area above the text panel."""
+def draw_map(segments, tiles, map_w=WIDTH, markers=True):
+    """The route on map tiles, fitted into the left map_w pixels of the area above the text panel.
+    A place's picture passes every route there, without start and finish markers."""
     pts = [[world_xy(seg[i], seg[i + 1]) for i in range(0, len(seg), 3)] for seg in segments]
     xs = [p[0] for line in pts for p in line]
     ys = [p[1] for line in pts for p in line]
@@ -118,7 +120,7 @@ def draw_map(segments, tiles, map_w=WIDTH):
         for line in lines:
             if len(line) > 1:
                 d.line(line, fill=color, width=width * LINE_SCALE, joint="curve")
-    for (x, y), fill in ((lines[-1][-1], "#24292f"), (lines[0][0], "#2f9e44")):
+    for (x, y), fill in ((lines[-1][-1], "#24292f"), (lines[0][0], "#2f9e44")) if markers else ():
         r = 9 * LINE_SCALE
         d.ellipse((x - r, y - r, x + r, y + r), fill=fill, outline="white", width=3 * LINE_SCALE)
     layer = layer.resize((WIDTH, HEIGHT), Image.LANCZOS)
@@ -227,6 +229,10 @@ def share_page(w, t, base_url, site_title, has_image, photo_count):
     image = f"{base_url}w/{w['id']}.jpg" if has_image else f"{base_url}images/share.jpg"
     title, description = share_text(t, site_title, photo_count)
     alt = f"Map of the route at {t['title']}{' and photos from the walk' if photo_count else ''}" if has_image else site_title
+    return page_html(title, description, page_url, image, alt, target, site_title)
+
+
+def page_html(title, description, page_url, image, alt, target, site_title):
     e = lambda s: html.escape(s, quote=True)
     # No <meta http-equiv="refresh">: Facebook follows those and would preview the home page instead.
     return f"""<!doctype html>
@@ -255,6 +261,67 @@ def share_page(w, t, base_url, site_title, has_image, photo_count):
 """
 
 
+def place_slug(name):
+    """A place's share page name (p/<slug>.html). The dashboard's placeSlug() must give the same."""
+    text = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
+    return re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-") or "place"
+
+
+def place_text(name, walks, photo_count, site_title):
+    """A place's picture subtitle and link description, summing up every walk and ride there."""
+    walks = sorted(walks, key=lambda w: w["date"])
+    n_walks = sum(w["activity"] == "Walk" for w in walks)
+    counts = [f"{n:,} {noun}{'s' if n != 1 else ''}" for n, noun in ((n_walks, "walk"), (len(walks) - n_walks, "bike ride")) if n]
+    counts = " and ".join(counts)
+    miles = sum(w["mi"] or 0 for w in walks)
+    first, last = date.fromisoformat(walks[0]["date"]), date.fromisoformat(walks[-1]["date"])
+    if len(walks) == 1:
+        short, span = f"{first:%b} {first.day}, {first.year}", f"on {first:%B} {first.day}, {first.year}"
+    elif (first.year, first.month) == (last.year, last.month):
+        short, span = f"{first:%b %Y}", f"in {first:%B %Y}"
+    else:
+        short, span = f"{first:%b %Y} – {last:%b %Y}", f"from {first:%B %Y} to {last:%B %Y}"
+    city = places.majority(f"{w['city']}, {w['state'] or w['country']}" if w["city"] else None for w in walks)[0]
+    where = f" in {city}" if city and city.split(",")[0] != name else ""
+    total = f"{miles:,.1f} mi" if len(walks) == 1 else f"{miles:,.1f} mi in all"
+    extras = []
+    if len(walks) > 1:
+        longest = max(w["mi"] or 0 for w in walks)
+        extras.append(f"Longest {longest:.1f} mi, latest {last:%b} {last.day}, {last.year}.")
+    if photo_count:
+        extras.append(f"{photo_count:,} photo{'s' if photo_count != 1 else ''}.")
+    return {
+        "title": f"{name} · {counts}",
+        "subtitle": f"{counts} · {miles:,.1f} mi · {short}",
+        "description": " ".join([f"{counts}{where}, {total}, {span}."] + extras + [f"On {site_title}."]),
+    }
+
+
+def draw_picture(segments, tiles, photo_paths, more, title, subtitle, site_title, out_path, markers=True):
+    """The share picture: the map, the photos at its right if there are any, and the text panel."""
+    img = draw_map(segments, tiles, WIDTH - PHOTOS_W - GAP if photo_paths else WIDTH, markers)
+    if photo_paths:
+        draw_photos(img, photo_paths, more)
+    draw_panel(img, title, subtitle, site_title)
+    tmp = out_path.with_suffix(".part")
+    img.save(tmp, "JPEG", quality=82, optimize=True, progressive=True)
+    tmp.replace(out_path)
+
+
+def write_if_changed(path, text):
+    if not path.exists() or path.read_text(encoding="utf-8") != text:
+        path.write_text(text, encoding="utf-8")
+
+
+def remove_others(folder, keep):
+    removed = 0
+    for path in folder.iterdir():
+        if path.name not in keep:
+            path.unlink()
+            removed += 1
+    return removed
+
+
 def update_previews(site_dir, data_dir):
     site_dir = Path(site_dir)
     workouts = read_js(site_dir / "data" / "workouts.js")["workouts"]
@@ -277,19 +344,14 @@ def update_previews(site_dir, data_dir):
     started = time.time()
     for n, w in enumerate(stale, 1):
         t = texts[w["id"]]
+        photos = [site_dir / "photos" / w["id"] / f"{p['f']}.jpg" for p in shown.get(w["id"], [])]
         try:
-            img = draw_map(routes[w["id"]], tiles, WIDTH - PHOTOS_W - GAP if w["id"] in shown else WIDTH)
+            draw_picture(routes[w["id"]], tiles, photos, len(albums.get(w["id"], [])) - len(photos),
+                         t["title"], f"{t['long_date']} · {t['stats']}", site_title, out_dir / f"{w['id']}.jpg")
         except requests.RequestException as exc:
             failed += 1
             print(f"  preview for {w['id']} skipped: map tiles unavailable ({exc})")
             continue
-        if w["id"] in shown:
-            draw_photos(img, [site_dir / "photos" / w["id"] / f"{p['f']}.jpg" for p in shown[w["id"]]],
-                        len(albums[w["id"]]) - len(shown[w["id"]]))
-        draw_panel(img, t["title"], f"{t['long_date']} · {t['stats']}", site_title)
-        tmp = out_dir / f"{w['id']}.part"
-        img.save(tmp, "JPEG", quality=82, optimize=True, progressive=True)
-        tmp.replace(out_dir / f"{w['id']}.jpg")
         manifest[w["id"]] = prints[w["id"]]
         drawn += 1
         if n % 25 == 0:
@@ -302,19 +364,63 @@ def update_previews(site_dir, data_dir):
     for w in workouts:
         has_image = (out_dir / f"{w['id']}.jpg").exists()
         page = share_page(w, texts[w["id"]], base_url, site_title, has_image, len(albums.get(w["id"], [])))
-        path = out_dir / f"{w['id']}.html"
-        if not path.exists() or path.read_text(encoding="utf-8") != page:
-            path.write_text(page, encoding="utf-8")
-        keep |= {path.name, f"{w['id']}.jpg"}
-    removed = 0
-    for path in out_dir.iterdir():
-        if path.name not in keep:
-            path.unlink()
-            removed += 1
+        write_if_changed(out_dir / f"{w['id']}.html", page)
+        keep |= {f"{w['id']}.html", f"{w['id']}.jpg"}
+    removed = remove_others(out_dir, keep)
     size = sum(p.stat().st_size for p in out_dir.iterdir())
     extra = f", {failed} skipped (no map tiles)" if failed else ""
     print(f"Share pages: {len(workouts)} walks, {drawn} pictures drawn{extra}, {tiles.fetched} map tiles downloaded, "
           f"{removed} old files removed, {size / 1e6:.1f} MB -> {out_dir}")
+    update_place_previews(site_dir, workouts, texts, routes, albums, manifest, manifest_path, tiles, base_url, site_title)
+
+
+def update_place_previews(site_dir, workouts, texts, routes, albums, manifest, manifest_path, tiles, base_url, site_title):
+    """A share page for each place, docs/p/<slug>.html: every route there on one map, photos from across
+    its walks, and a summary. It opens the place's walk list on the dashboard."""
+    out_dir = site_dir / "p"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    by_place = {}
+    for w in workouts:
+        by_place.setdefault(texts[w["id"]]["place"], []).append(w)
+    keep, slugs = set(), {}
+    drawn = failed = 0
+    for name, walks in sorted(by_place.items()):
+        slug = place_slug(name)
+        if slug in slugs:
+            print(f"  place share page for {name} skipped: {slugs[slug]} already uses p/{slug}.html")
+            continue
+        slugs[slug] = name
+        walks.sort(key=lambda w: w["start"] or w["date"])
+        album = [(w["id"], p) for w in walks for p in albums.get(w["id"], [])]
+        shown = pick_photos(album) if album else []
+        t = place_text(name, walks, len(album), site_title)
+        segments = [seg for w in walks for seg in routes.get(w["id"], [])]
+        picture = out_dir / f"{slug}.jpg"
+        key = f"place:{slug}"
+        if segments:
+            fp = fingerprint([name, t], segments, site_title, [f"{wid}/{p['f']}" for wid, p in shown])
+            if manifest.get(key) != fp or not picture.exists():
+                try:
+                    draw_picture(segments, tiles, [site_dir / "photos" / wid / f"{p['f']}.jpg" for wid, p in shown],
+                                 len(album) - len(shown), name, t["subtitle"], site_title, picture, markers=False)
+                    manifest[key] = fp
+                    drawn += 1
+                except requests.RequestException as exc:
+                    failed += 1
+                    print(f"  preview for {name} skipped: map tiles unavailable ({exc})")
+        has_image = picture.exists()
+        page = page_html(t["title"], t["description"], f"{base_url}p/{slug}.html",
+                         f"{base_url}p/{slug}.jpg" if has_image else f"{base_url}images/share.jpg",
+                         f"Map of every route at {name}{' and photos from the walks' if shown else ''}" if has_image else site_title,
+                         f"../#place={quote(name, safe='')}", site_title)
+        write_if_changed(out_dir / f"{slug}.html", page)
+        keep |= {f"{slug}.html", f"{slug}.jpg"}
+    manifest_path.write_text(json.dumps(manifest, indent=0), encoding="utf-8")
+    removed = remove_others(out_dir, keep)
+    size = sum(p.stat().st_size for p in out_dir.iterdir())
+    extra = f", {failed} skipped (no map tiles)" if failed else ""
+    print(f"Place share pages: {len(slugs)} places, {drawn} pictures drawn{extra}, {removed} old files removed, "
+          f"{size / 1e6:.1f} MB -> {out_dir}")
 
 
 def fingerprint(text, segments, site_title, photo_names):

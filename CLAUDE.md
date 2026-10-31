@@ -48,8 +48,10 @@ original to the Recycle Bin.
    - Thresholds: 30 s of overlap per song, at least 3 songs per walk, no podcasts.
    - If the folder is missing, it skips the step and leaves `music.js` alone.
    - The dashboard's `soundtrack(w)` renders it in the walk detail. Spotify art must stay unaltered and link to Spotify.
-5. `previews.py`: per-walk share pages `docs/w/{id}.html` + 1200×630 `.jpg` route pictures, redrawn
-   only when a fingerprint changes (`data/previews.json`); bump `STYLE_VERSION` to redraw all.
+5. `previews.py`: per-walk share pages `docs/w/{id}.html` + 1200×630 `.jpg` route pictures, and
+   per-place ones `docs/p/{slug}.html` (every route there, a summary). Redrawn only when a
+   fingerprint changes (`data/previews.json`); bump `STYLE_VERSION` to redraw all. `place_slug()`
+   must match `placeSlug()` in `app.js`, which builds the place's share link.
 
 `photos.py` is separate (scores photos by distance to track, timing, metadata source and
 `photo_content.csv`; dedupes; writes `docs/photos/{id}/` and `docs/data/photos.js`); `photo_overrides.csv`

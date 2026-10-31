@@ -273,6 +273,12 @@ cached in `data/tile_cache/`, and a picture is only redrawn when its walk's rout
 change (`data/previews.json`); bump
 `STYLE_VERSION` in `previews.py` to redraw them all after changing how they look.
 
+Places work the same way: a place's walk list has a **Copy link to this place** button, which gives
+`p/{place-name}.html`. Its preview shows every route there on one map, photos from across its walks,
+and a summary (how many walks and rides, the miles, the dates, the longest and latest), and it sends
+visitors on to that place's walk list. A link to a place with bike rides opens with **All** selected,
+so the list matches the preview.
+
 ### Clean stats (`data/workouts_clean.csv`)
 
 Built by [exports.py](exports.py). Newest first. Distances, pace, speed and elevation come from
