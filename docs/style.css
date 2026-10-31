@@ -365,6 +365,18 @@ h2 { margin: 0; font-size: 16px; font-weight: 600; display: flex; align-items: c
 .walk-detail .notes { font-style: italic; color: var(--text-secondary); margin: 0 0 12px; }
 .walk-detail .links { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .walk-detail .placeholder { color: var(--text-muted); }
+/* A walk's sections (Details, Photos, Soundtrack) as tabs, when it has more than Details. */
+.walk-tabs { display: flex; gap: 4px; margin: 0 0 12px; border-bottom: 1px solid var(--grid); }
+.walk-tab {
+  display: inline-flex; align-items: center; gap: 4px;
+  font: inherit; font-size: 13px; font-weight: 600; color: var(--text-secondary);
+  background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  padding: 6px 10px; cursor: pointer; font-variant-numeric: tabular-nums;
+}
+.walk-tab svg { width: 16px; height: 16px; }
+.walk-tab:hover { color: var(--text-primary); background: var(--hover-wash); }
+.walk-tab[aria-selected="true"] { color: var(--series-1); border-bottom-color: var(--series-1); }
+.walk-tab:focus-visible { outline: 2px solid var(--series-1); outline-offset: -2px; border-radius: 4px 4px 0 0; }
 .pace-legend { margin: 12px 0; font-size: 12px; color: var(--text-secondary); }
 .pace-legend .ramp { display: flex; gap: 2px; margin: 4px 0 2px; }
 .pace-legend .ramp span { flex: 1; height: 8px; border-radius: 2px; }
@@ -851,7 +863,6 @@ code { font-size: 12px; background: var(--page); border: 1px solid var(--border)
 .photo-more { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, 0.5); color: #fff; font-size: 18px; font-weight: 600; }
 /* Walk soundtrack (music.py): songs in order, with the mile each started at. Covers are shown unaltered (Spotify's rules). */
 .soundtrack { margin: 0 0 14px; }
-.soundtrack-head { font-size: 13px; color: var(--text-secondary); margin-bottom: 2px; }
 .soundtrack-summary { margin: 0 0 6px; font-size: 13px; color: var(--text-primary); }
 .songs { list-style: none; margin: 0; padding: 0; }
 .songs li { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--border); }

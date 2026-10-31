@@ -1534,7 +1534,7 @@
     const url = list.find((w) => w.url) ? list.find((w) => w.url).url : null;
     const items = list.map((w) => {
       const row = el("li", {}, el("button", { type: "button", class: "walk-item", onclick: () => selectWalk(w.id, false, { push: true }) }, [
-        el("span", { class: "walk-item-date" }, dateWithTags(w)),
+        el("span", { class: "walk-item-date" }, [...dateWithTags(w), MUSIC.walks[w.id] ? musicBadge(w) : null]),
         el("span", { class: "walk-item-stats", text: `${fmtMi(w.mi)} · ${fmtPace(w.pace)} /mi` }),
         w.detail ? el("span", { class: "walk-item-sub", text: w.detail }) : null,
       ]));
@@ -1623,25 +1623,62 @@
         w.detail ? ` · ${w.detail}` : null,
         whereParts(w).length ? `, ${whereParts(w).join(", ")}` : null,
       ] : placeLine(w)) : null,
-      el("p", { class: "visit", text: visitText }),
-      placeLink(w),
-      w.notes ? el("p", { class: "notes", text: `“${w.notes}”` }) : null,
-      photoStrip(w),
-      soundtrack(w),
-      el("dl", {}, rows.flatMap(([k, v]) => [el("dt", { text: k }), el("dd", { text: v })])),
-      bands.pieces.length ? el("div", { class: "pace-legend" }, [
-        "Pace along the route",
-        el("div", { class: "ramp" }, [1, 2, 3, 4, 5].map((b) => el("span", { style: `background:${css(`--seq-${b}`)}` }))),
-        el("div", { class: "ends" }, [el("span", { text: `Slower (${fmtPace(bands.slow)})` }), el("span", { text: `Faster (${fmtPace(bands.fast)})` })]),
-      ]) : null,
-      el("div", { class: "links" }, [
-        el("a", { href: w.link.replace("http://", "https://"), target: "_blank", rel: "noopener", text: "View on MapMyWalk ↗" }),
-        w.latlon ? el("a", { href: `https://www.google.com/maps/search/?api=1&query=${w.latlon[0]},${w.latlon[1]}`, target: "_blank", rel: "noopener", text: "Start point in Google Maps ↗" }) : null,
-        el("a", { href: kmlUrl, download: `${w.date}-${w.id}.kml`, text: "Download this route (KML)" }),
-        el("button", { type: "button", class: "link-button", text: shareLabel(), onclick: (e) => shareWalk(w, e.currentTarget) }),
-        state.place === "all" ? el("button", { type: "button", class: "link-button", text: "Clear selection", onclick: () => clearSelection() }) : null,
+      ...walkTabs(w, [
+        { key: "detail", label: "Details", content: [
+          el("p", { class: "visit", text: visitText }),
+          placeLink(w),
+          w.notes ? el("p", { class: "notes", text: `“${w.notes}”` }) : null,
+          el("dl", {}, rows.flatMap(([k, v]) => [el("dt", { text: k }), el("dd", { text: v })])),
+          bands.pieces.length ? el("div", { class: "pace-legend" }, [
+            "Pace along the route",
+            el("div", { class: "ramp" }, [1, 2, 3, 4, 5].map((b) => el("span", { style: `background:${css(`--seq-${b}`)}` }))),
+            el("div", { class: "ends" }, [el("span", { text: `Slower (${fmtPace(bands.slow)})` }), el("span", { text: `Faster (${fmtPace(bands.fast)})` })]),
+          ]) : null,
+          el("div", { class: "links" }, [
+            el("a", { href: w.link.replace("http://", "https://"), target: "_blank", rel: "noopener", text: "View on MapMyWalk ↗" }),
+            w.latlon ? el("a", { href: `https://www.google.com/maps/search/?api=1&query=${w.latlon[0]},${w.latlon[1]}`, target: "_blank", rel: "noopener", text: "Start point in Google Maps ↗" }) : null,
+            el("a", { href: kmlUrl, download: `${w.date}-${w.id}.kml`, text: "Download this route (KML)" }),
+            el("button", { type: "button", class: "link-button", text: shareLabel(), onclick: (e) => shareWalk(w, e.currentTarget) }),
+            state.place === "all" ? el("button", { type: "button", class: "link-button", text: "Clear selection", onclick: () => clearSelection() }) : null,
+          ]),
+        ] },
+        { key: "photos", label: "Photos", icon: CAMERA_SVG, count: photosOf(w.id).length, content: [photoStrip(w)] },
+        { key: "music", label: "Soundtrack", icon: NOTE_SVG, count: MUSIC.walks[w.id] ? MUSIC.walks[w.id].list.length : 0, content: [soundtrack(w)] },
       ]),
     ].filter(Boolean));
+  }
+
+  /** A walk's sections as tabs: Details always, Photos and Soundtrack only when the walk has them. A new
+   *  walk opens on Details; re-drawing the same walk (after a filter change, say) keeps the open tab.
+   *  With only Details to show, there's no tab bar at all. */
+  const walkTab = { id: null, key: "detail" };
+  function walkTabs(w, tabs) {
+    tabs = tabs.filter((t) => t.key === "detail" || t.count);
+    if (walkTab.id !== w.id || !tabs.some((t) => t.key === walkTab.key)) Object.assign(walkTab, { id: w.id, key: "detail" });
+    const panels = tabs.map((t) => el("div", { class: "walk-panel", id: `walk-panel-${t.key}`, role: tabs.length > 1 ? "tabpanel" : null,
+      "aria-labelledby": tabs.length > 1 ? `walk-tab-${t.key}` : null, hidden: t.key === walkTab.key ? null : "" }, t.content.filter(Boolean)));
+    if (tabs.length < 2) return panels;
+    const buttons = tabs.map((t, i) => {
+      const b = el("button", { type: "button", class: "walk-tab", role: "tab", id: `walk-tab-${t.key}`, "aria-controls": `walk-panel-${t.key}`,
+        title: t.icon ? t.label : null, "aria-label": t.icon ? `${t.label} (${fmtNum(t.count)})` : null, onclick: () => show(i) });
+      if (t.icon) { b.innerHTML = t.icon; b.append(fmtNum(t.count)); } else b.textContent = t.label;
+      return b;
+    });
+    function show(i, focus) {
+      walkTab.key = tabs[i].key;
+      buttons.forEach((b, j) => { b.setAttribute("aria-selected", String(i === j)); b.tabIndex = i === j ? 0 : -1; panels[j].hidden = i !== j; });
+      if (focus) buttons[i].focus();
+    }
+    const bar = el("div", { class: "walk-tabs", role: "tablist", "aria-label": "Walk sections" }, buttons);
+    bar.addEventListener("keydown", (e) => {
+      const i = buttons.indexOf(document.activeElement), n = buttons.length;
+      const to = { ArrowRight: i + 1, ArrowLeft: i - 1 + n, Home: 0, End: n - 1 }[e.key];
+      if (i < 0 || to == null) return;
+      e.preventDefault();
+      show(to % n, true);
+    });
+    show(tabs.findIndex((t) => t.key === walkTab.key));
+    return [bar, ...panels];
   }
 
   /** Phones get their share sheet; elsewhere the link is copied. */
@@ -1667,18 +1704,20 @@
 
   // ---------- photos ----------
   const CAMERA_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4.5h6l1.5 2H20a1.5 1.5 0 0 1 1.5 1.5v10a1.5 1.5 0 0 1-1.5 1.5H4A1.5 1.5 0 0 1 2.5 18V8A1.5 1.5 0 0 1 4 6.5h3.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="12.5" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+  const NOTE_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5.5l11-2V16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="18" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="16" r="2.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
   const photosOf = (id) => PHOTOS[id] || [];
   const photoUrl = (id, p, thumb) => `photos/${id}/${p.f}${thumb ? "_t" : ""}.jpg`;
   const plural = (n, one, many) => `${fmtNum(n)} ${n === 1 ? one : many}`;
 
-  /** A small camera and count, for lists of walks. */
-  function cameraBadge(w) {
-    const n = photosOf(w.id).length;
-    const badge = el("span", { class: "camera-badge", title: plural(n, "photo", "photos"), "aria-label": plural(n, "photo", "photos") });
-    badge.innerHTML = CAMERA_SVG;
+  /** A small icon and count, for lists of walks: a camera for photos, a note for a soundtrack. */
+  function countBadge(icon, n, one, many) {
+    const badge = el("span", { class: "camera-badge", title: plural(n, one, many), "aria-label": plural(n, one, many) });
+    badge.innerHTML = icon;
     badge.append(String(n));
     return badge;
   }
+  const cameraBadge = (w) => countBadge(CAMERA_SVG, photosOf(w.id).length, "photo", "photos");
+  const musicBadge = (w) => countBadge(NOTE_SVG, MUSIC.walks[w.id].list.length, "song", "songs");
 
   /** Miles along the route at a number of seconds into the walk (scaled to the walk's full distance,
    *  since the published route is simplified and a little shorter). */
@@ -1761,7 +1800,6 @@
     ]);
     const shown = 5;
     return el("div", { class: "soundtrack" }, [
-      el("div", { class: "soundtrack-head", text: "Soundtrack" }),
       el("p", { class: "soundtrack-summary", text: summary }),
       el("ol", { class: "songs" }, list.slice(0, shown).map(row)),
       list.length > shown ? el("details", { class: "songs-more" }, [
