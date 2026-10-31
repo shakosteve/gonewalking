@@ -243,6 +243,15 @@ def write_js(path, variable, value):
     return path.stat().st_size
 
 
+def read_js(path):
+    """The value a write_js file holds, or None if it's missing or unreadable."""
+    try:
+        text = path.read_text(encoding="utf-8")
+        return json.loads(text[text.index("=") + 1:].strip().rstrip(";"))
+    except (OSError, ValueError):
+        return None
+
+
 def write_site_data(rows, track_features, kml_dir, site_data_dir):
     """Write the dashboard's data as .js files (so the page also works opened from disk)."""
     site_data_dir.mkdir(parents=True, exist_ok=True)
@@ -280,7 +289,14 @@ def write_site_data(rows, track_features, kml_dir, site_data_dir):
             "three_rivers": sorted(n for n in three_rivers if n),
             "kml_years": sorted({r["year"] for r in rows if r["has_track"]}, reverse=True),
             "regions": places.REGIONS}
-    write_js(site_data_dir / "workouts.js", "GW_DATA", {"meta": meta, "workouts": workouts})
+    data = {"meta": meta, "workouts": workouts}
+    # "Data updated" means the walks changed, not that process ran: with nothing new, the file is left alone.
+    old = read_js(site_data_dir / "workouts.js")
+    if old and old.get("meta", {}).get("updated"):
+        if {**data, "meta": {**meta, "updated": None}} == {**old, "meta": {**old["meta"], "updated": None}}:
+            meta["updated"] = old["meta"]["updated"]
+    if data != old:
+        write_js(site_data_dir / "workouts.js", "GW_DATA", data)
     size = write_js(site_data_dir / "routes.js", "GW_ROUTES", routes)
     site_kml = site_data_dir / "kml"
     site_kml.mkdir(exist_ok=True)

@@ -22,6 +22,7 @@ import bisect
 import json
 import math
 import os
+from collections import Counter
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -66,7 +67,7 @@ def load_covers(folder):
     """Each track's cover image id, from MusicDashboard's history (album of each track) and art cache."""
     art_file = folder / "art.json"
     art = json.loads(art_file.read_text(encoding="utf-8")) if art_file.exists() else {}
-    covers = {}
+    seen = {}
     for name in ("history.jsonl", "recently_played.jsonl"):
         path = folder / name
         if not path.exists():
@@ -76,8 +77,9 @@ def load_covers(folder):
                 p = json.loads(line)
                 image = (art.get(p.get("album_uri")) or {}).get("image") or ""
                 if image.startswith(COVER_PREFIX):
-                    covers[p["uri"]] = image[len(COVER_PREFIX):]
-    return covers
+                    seen.setdefault(p["uri"], Counter())[image[len(COVER_PREFIX):]] += 1
+    # A song played from several albums gets the cover it was played with most, so one new play doesn't swap it.
+    return {uri: counts.most_common(1)[0][0] for uri, counts in seen.items()}
 
 
 def miles_along(feature):

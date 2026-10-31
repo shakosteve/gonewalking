@@ -61,7 +61,9 @@ pushes `docs/` only (`AUTO_PUBLISH`), and sends e-mail/Windows reports.
 - **Generated vs hand-written in `docs/`:** `docs/data/*`, `docs/w/*` and `docs/photos/*` are
   regenerated; never edit them by hand. `index.html`, `app.js`, `style.css`, `config.js` and
   `images/` are hand-written. Site data is emitted as `.js` assignments (not JSON) so the page also
-  works opened from `file://`.
+  works opened from `file://`. A `process` run with nothing new must leave them byte-identical, so
+  `git status` only shows real changes: `workouts.js` keeps its `meta.updated` when the walks are
+  unchanged, and nothing generated should depend on run time or file order.
 - **The dashboard** (`docs/app.js`) is a single vanilla-JS IIFE: plain SVG charts, Leaflet map, no
   framework or bundler. State lives in the URL hash (`#place=...&walk={id}`). Site settings (homes,
   birth date, season theme) come from `config.js` (`window.GW_CONFIG`).
