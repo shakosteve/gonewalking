@@ -206,6 +206,25 @@ It writes:
 
 Published photos count toward GitHub Pages' 1 GB site limit: each one takes about 250 KB.
 
+## Music
+
+Each walk's details show its **soundtrack**: the Spotify songs that played during the walk, in order,
+with the mile each one started at, a cover and title that link to Spotify, and a summary line
+("30 songs from 27 artists, most often Gordon Lightfoot (2) and David Lee Roth (2). Music for 85% of
+the walk."). Podcasts are left out.
+
+The listening history comes from the separate **MusicDashboard** project, which keeps it in its
+`data/` folder. `process` reads that folder (it never changes it and never contacts Spotify) and
+writes `docs/data/music.js`. By default it looks for `MusicDashboard\data` next to this folder; set
+`MUSIC_DATA=<folder>` in `.env` if it's somewhere else. Without it, the dashboard simply shows no
+soundtracks.
+
+- A song counts when at least 30 seconds of it played during the walk, and a walk gets a soundtrack
+  when at least 3 songs did (one or two is a song left playing at the trailhead).
+- Spotify's privacy export gives each play to the second. Plays after the export come from
+  MusicDashboard's live sync, placed to within about a minute.
+- Walks before May 2022 have no soundtracks: there's no Spotify listening during them.
+
 ## Dashboard (`docs/`)
 
 A static site, published at **https://shakosteve.github.io/gonewalking/** by GitHub Pages

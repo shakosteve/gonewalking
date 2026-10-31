@@ -849,6 +849,22 @@ code { font-size: 12px; background: var(--page); border: 1px solid var(--border)
 .photo-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.2s; }
 .photo-thumb:hover img, .photo-thumb:focus-visible img { transform: scale(1.06); }
 .photo-more { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0, 0, 0, 0.5); color: #fff; font-size: 18px; font-weight: 600; }
+/* Walk soundtrack (music.py): songs in order, with the mile each started at. Covers are shown unaltered (Spotify's rules). */
+.soundtrack { margin: 0 0 14px; }
+.soundtrack-head { font-size: 13px; color: var(--text-secondary); margin-bottom: 2px; }
+.soundtrack-summary { margin: 0 0 6px; font-size: 13px; color: var(--text-primary); }
+.songs { list-style: none; margin: 0; padding: 0; }
+.songs li { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 4px 0; border-bottom: 1px solid var(--border); }
+.song-cover { display: block; width: 32px; height: 32px; border-radius: 3px; overflow: hidden; background: var(--page); }
+.song-cover img { width: 100%; height: 100%; display: block; }
+.song-text { min-width: 0; line-height: 1.25; }
+.song-text a { display: block; color: var(--text-primary); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-text a:hover { color: var(--series-1); text-decoration: underline; }
+.song-artist { display: block; font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.song-mile { font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.songs-more summary { margin: 6px 0 2px; font-size: 13px; color: var(--series-1); cursor: pointer; }
+.soundtrack-note { margin-top: 6px; font-size: 11px; color: var(--text-muted); }
+.soundtrack-note a { color: inherit; }
 .photo-pin { display: grid; place-items: center; border-radius: 50%; background: var(--surface); color: var(--text-primary); box-shadow: 0 0 0 2px var(--series-2), 0 2px 6px rgba(0, 0, 0, 0.35); cursor: pointer; }
 .photo-pin svg { width: 15px; height: 15px; }
 .photo-pin:hover, .photo-pin:focus-visible { background: var(--series-2); color: #fff; }

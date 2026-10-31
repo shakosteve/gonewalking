@@ -1,10 +1,12 @@
-/* GoneWalking dashboard. Data: window.GW_DATA (stats), window.GW_ROUTES (tracks), window.GW_PHOTOS (albums), window.GW_CONFIG. */
+/* GoneWalking dashboard. Data: window.GW_DATA (stats), window.GW_ROUTES (tracks), window.GW_PHOTOS (albums),
+   window.GW_MUSIC (walk soundtracks, from music.py), window.GW_CONFIG. */
 (function () {
   "use strict";
 
   const DATA = window.GW_DATA;
   const ROUTES = window.GW_ROUTES || {};
   const PHOTOS = window.GW_PHOTOS || {};
+  const MUSIC = window.GW_MUSIC || { songs: [], walks: {} };
   const CONFIG = window.GW_CONFIG || {};
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -1625,6 +1627,7 @@
       placeLink(w),
       w.notes ? el("p", { class: "notes", text: `“${w.notes}”` }) : null,
       photoStrip(w),
+      soundtrack(w),
       el("dl", {}, rows.flatMap(([k, v]) => [el("dt", { text: k }), el("dd", { text: v })])),
       bands.pieces.length ? el("div", { class: "pace-legend" }, [
         "Pace along the route",
@@ -1729,6 +1732,43 @@
           more ? el("span", { class: "photo-more", text: `+${more}` }) : null,
         ]);
       })),
+    ]);
+  }
+
+  /** The songs that played on a walk, in order with the mile each started at. Covers and titles link to
+   *  Spotify (its artwork has to). The first few show; the rest fold away. */
+  function soundtrack(w) {
+    const walk = MUSIC.walks[w.id];
+    if (!walk) return null;
+    const list = walk.list.map(([i, mi]) => {
+      const [name, artist, cover, track] = MUSIC.songs[i];
+      return { name, artist, cover, url: `https://open.spotify.com/track/${track}`, mi };
+    });
+    const counts = new Map();
+    for (const s of list) counts.set(s.artist, (counts.get(s.artist) || 0) + 1);
+    const often = [...counts].filter(([, n]) => n >= 2).sort((a, b) => b[1] - a[1]).slice(0, 2);
+    const summary = `${plural(list.length, "song", "songs")} from ${plural(counts.size, "artist", "artists")}`
+      + (often.length ? `, most often ${often.map(([a, n]) => `${a} (${n})`).join(" and ")}` : "")
+      + `. Music for ${Math.round(walk.share * 100)}% of the ${w.activity === "Walk" ? "walk" : "ride"}.`;
+    const row = (s) => el("li", {}, [
+      el("a", { href: s.url, target: "_blank", rel: "noopener", class: "song-cover", "aria-label": `${s.name} on Spotify` },
+        s.cover ? el("img", { src: `https://i.scdn.co/image/${s.cover}`, alt: "", loading: "lazy" }) : null),
+      el("span", { class: "song-text" }, [
+        el("a", { href: s.url, target: "_blank", rel: "noopener", text: s.name }),
+        el("span", { class: "song-artist", text: s.artist }),
+      ]),
+      el("span", { class: "song-mile", text: s.mi != null ? `mi ${s.mi.toFixed(1)}` : "" }),
+    ]);
+    const shown = 5;
+    return el("div", { class: "soundtrack" }, [
+      el("div", { class: "soundtrack-head", text: "Soundtrack" }),
+      el("p", { class: "soundtrack-summary", text: summary }),
+      el("ol", { class: "songs" }, list.slice(0, shown).map(row)),
+      list.length > shown ? el("details", { class: "songs-more" }, [
+        el("summary", { text: `All ${plural(list.length, "song", "songs")}` }),
+        el("ol", { class: "songs", start: shown + 1 }, list.slice(shown).map(row)),
+      ]) : null,
+      el("div", { class: "soundtrack-note" }, ["Songs and covers from ", el("a", { href: "https://open.spotify.com", target: "_blank", rel: "noopener", text: "Spotify" })]),
     ]);
   }
 

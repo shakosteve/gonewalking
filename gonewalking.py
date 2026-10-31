@@ -25,6 +25,7 @@ from pathlib import Path
 import requests
 
 import exports
+import music
 import photos
 import places
 import previews
@@ -194,6 +195,8 @@ def process(force=False, fetch_places=False):
     tracks.process_all(STATS_CSV, TCX_DIR, TRACKS_DIR, force=force)
     found = places.update_places(TRACKS_DIR, DATA_DIR, PLACE_OVERRIDES, fetch_missing=fetch_places, links_path=PLACE_LINKS)
     exports.export_all(STATS_CSV, TRACKS_DIR, DATA_DIR, SITE_DATA_DIR)
+    load_env()  # MUSIC_DATA, if the listening history isn't in the usual place
+    music.update_music(ROOT, TRACKS_DIR, SITE_DATA_DIR)
     previews.update_previews(SITE_DIR, DATA_DIR)
     return found
 

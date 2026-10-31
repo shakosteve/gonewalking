@@ -39,7 +39,16 @@ original to the Recycle Bin.
 3. `exports.py`: joins `data/workouts.csv` with tracks and places → `data/workouts_clean.csv`, KML for
    Google My Maps, and the site data `docs/data/workouts.js` (`window.GW_DATA`) and `routes.js`
    (`window.GW_ROUTES`).
-4. `previews.py`: per-walk share pages `docs/w/{id}.html` + 1200×630 `.jpg` route pictures, redrawn
+4. `music.py`: walk soundtracks.
+   - It reads the MusicDashboard project's `data/` folder (`MUSIC_DATA` in `.env`, default `../MusicDashboard/data`), read-only and with no network:
+     - the Spotify export's `Streaming_History_Audio_*.json` (end time + `ms_played`)
+     - live plays newer than the export from `recently_played.jsonl` (`played_at` is the end time)
+     - covers via `history.jsonl` album URIs and `art.json`
+   - It writes `docs/data/music.js` (`window.GW_MUSIC`). Songs are listed once, and walks hold `[song number, mile]`.
+   - Thresholds: 30 s of overlap per song, at least 3 songs per walk, no podcasts.
+   - If the folder is missing, it skips the step and leaves `music.js` alone.
+   - The dashboard's `soundtrack(w)` renders it in the walk detail. Spotify art must stay unaltered and link to Spotify.
+5. `previews.py`: per-walk share pages `docs/w/{id}.html` + 1200×630 `.jpg` route pictures, redrawn
    only when a fingerprint changes (`data/previews.json`); bump `STYLE_VERSION` to redraw all.
 
 `photos.py` is separate (scores photos by distance to track, timing, metadata source and
